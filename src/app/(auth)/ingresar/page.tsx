@@ -1,0 +1,30 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+
+import { FormularioIngreso } from "@/components/auth/formulario-ingreso";
+import { Alerta } from "@/components/ui/alerta";
+
+export const metadata: Metadata = { title: "Ingresar" };
+
+const MENSAJES: Record<string, string> = {
+  "enlace-invalido": "El enlace no es válido o ya expiró. Intenta de nuevo.",
+};
+
+export default async function PaginaIngresar({ searchParams }: PageProps<"/ingresar">) {
+  const { siguiente, error } = await searchParams;
+  const mensajeError = typeof error === "string" ? MENSAJES[error] : undefined;
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-1 text-center">
+        <h1 className="text-2xl font-bold text-brand-dark">Ingresa a tu cuenta</h1>
+        <p className="text-sm text-ink/70">Administra el perfil de tu negocio.</p>
+      </div>
+      {mensajeError && <Alerta tono="error">{mensajeError}</Alerta>}
+      <FormularioIngreso siguiente={typeof siguiente === "string" ? siguiente : undefined} />
+      <p className="text-center text-sm text-ink/70">
+        ¿No tienes cuenta? <Link href="/registro" className="font-semibold">Regístrate gratis</Link>
+      </p>
+    </div>
+  );
+}
