@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+/*
+ * Paleta EmprendeHN. Tailwind v4 genera las utilidades a partir de estos tokens:
+ *   bg-brand-dark, text-brand, bg-brand-light, bg-accent, text-ink, border-brand/20…
+ * No usar hex sueltos en los componentes: todo color sale de aquí.
+ */
+@theme {
+  --color-brand-dark: #0f3d5e; /* headers, texto fuerte, botones principales */
+  --color-brand: #1b6fa8; /* links, elementos secundarios, hover */
+  --color-brand-light: #f2f6f8; /* fondo general */
+  --color-accent: #ff7a3d; /* CTAs, badges, premium (usar texto ink encima) */
+  --color-ink: #1a1a1a; /* texto casi negro */
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-brand-light text-ink antialiased;
+  }
+
+  a {
+    @apply text-brand;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand;
+  }
+}
