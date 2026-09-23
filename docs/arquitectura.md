@@ -1,7 +1,9 @@
 # EmprendeHN — Plan de arquitectura y esquema de datos (MVP)
 
-> Estado: **propuesta para revisión**. Todavía no hay código. Las migraciones SQL se
-> generarán en `supabase/migrations/` y las aplica manualmente el dueño del proyecto.
+> Estado: **implementado (MVP)**. Plan aprobado; las decisiones pendientes se tomaron
+> con la opción recomendada (ver §6). Las migraciones SQL están en `supabase/migrations/`
+> y las aplica manualmente el dueño del proyecto. Instrucciones de puesta en marcha en el
+> [README](../README.md).
 
 ---
 
@@ -24,7 +26,7 @@ de canary, beta o releases de menos de ~3 semanas.
 
 Node: 22 LTS (Next 16 requiere ≥ 20.9).
 
-### 1.1 Decisión: Tailwind v4 vs v3 (necesito tu confirmación)
+### 1.1 Decisión: Tailwind v4 vs v3 → **v4**
 
 - **v4 (recomendado).** Es la versión estable actual, con un motor más rápido y sin
   `tailwind.config.js` por defecto: los tokens se declaran en CSS con `@theme`. Next 16 la
@@ -430,6 +432,7 @@ El esquema actual ya lo soporta sin romper nada:
 | `006_businesses.sql` | enum `business_status`, tabla, índices, trigger de slug, trigger guardián, RLS | panel |
 | `007_business_images.sql` | tabla, trigger de límite por plan, RLS | galería |
 | `008_storage.sql` | bucket `business-images` + políticas de `storage.objects` | galería |
+| `009_funciones_directorio.sql` | RPC `buscar_negocios` (búsqueda + filtros + orden) y `resumen_directorio` (conteos por categoría/ciudad) | directorio público, sitemap |
 
 ## 5. Orden de construcción
 
@@ -440,3 +443,22 @@ El esquema actual ya lo soporta sin romper nada:
 5. Directorio público (inicio, categoría, categoría + ciudad, negocio, búsqueda)
 6. Panel de admin (moderación, categorías)
 7. SEO técnico (sitemap, robots, metadata, JSON-LD `LocalBusiness` y `BreadcrumbList`, canonical, OpenGraph)
+
+## 6. Decisiones tomadas al implementar
+
+- **Tailwind v4** con tokens en `@theme` (mismos nombres de clase propuestos).
+- **Ciudad = municipio**: catálogo de 298 municipios (Distrito Central se muestra como
+  "Tegucigalpa") + campo libre `localidad` para colonia, barrio o aldea.
+- **Edición de un negocio aprobado**: se publica al instante (no vuelve a revisión); un
+  negocio `rechazado` vuelve a `pendiente` cuando su dueño lo edita.
+- **Máximo 3 negocios por cuenta** (constante en el trigger de `006` y en `lib/constantes.ts`).
+- **Llaves de Supabase**: se usa `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; acepta tanto la
+  publishable key nueva como la anon key legacy.
+- **Migración 009** adicional con las funciones de búsqueda (RPC) del directorio.
+- **Container queries** (`@container` de Tailwind v4) en el perfil del negocio, para que
+  se vea bien en la página pública, en la vista previa del panel y en la columna del admin.
+- **Barra fija de contacto** (WhatsApp/Llamar) en móvil en la página pública del negocio.
+- **Header público sin supabase-js**: decide "Mi panel / Ingresar" mirando si existe la
+  cookie de sesión, sin cargar el SDK en las páginas públicas.
+- **`tailwind-merge`** en `cn()` para resolver conflictos de clases.
+
