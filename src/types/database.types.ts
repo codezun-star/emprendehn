@@ -219,6 +219,7 @@ export type Database = {
           created_at: string
           descripcion: string
           direccion: string | null
+          documento_busqueda: unknown | null
           email_contacto: string | null
           enlace_mapa: string | null
           estado: Database["public"]["Enums"]["business_status"]
@@ -250,6 +251,7 @@ export type Database = {
           created_at?: string
           descripcion: string
           direccion?: string | null
+          documento_busqueda?: unknown | null
           email_contacto?: string | null
           enlace_mapa?: string | null
           estado?: Database["public"]["Enums"]["business_status"]
@@ -281,6 +283,7 @@ export type Database = {
           created_at?: string
           descripcion?: string
           direccion?: string | null
+          documento_busqueda?: unknown | null
           email_contacto?: string | null
           enlace_mapa?: string | null
           estado?: Database["public"]["Enums"]["business_status"]
@@ -562,6 +565,10 @@ export type Database = {
           municipio_slug: string
           total: number
         }[]
+      }
+      documento_negocio: {
+        Args: { p_categoria: string; p_descripcion: string; p_localidad: string; p_municipio: number; p_nombre: string }
+        Returns: unknown
       }
       slug_actual: { Args: { p_slug: string }; Returns: string }
       slug_negocio_libre: { Args: { p_base: string; p_negocio: string }; Returns: string }

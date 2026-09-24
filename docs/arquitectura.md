@@ -273,6 +273,29 @@ penaliza Google.
   cada página es canónica de sí misma. `/buscar` (24), el admin (negocios, reportes y reseñas,
   30) y las reseñas del panel (20) usan `?pagina=`. En la página del negocio se ven las 20
   reseñas más recientes y "Ver más reseñas" trae las siguientes desde el navegador.
+- **Rendimiento de la base** (migración 019), medido con 30 000 negocios publicados,
+  60 000 reseñas, 60 000 fotos y 150 000 filas de estadísticas (mejor de 3, Postgres 16):
+
+  | Consulta | Antes | Después |
+  |---|---|---|
+  | Búsqueda de texto ("panaderia") | 792 ms | 17 ms |
+  | Búsqueda de dos palabras | 863 ms | 9 ms |
+  | Categoría padre (listado grande) | 58 ms | 18 ms |
+  | /buscar sin filtros | 491 ms | 49 ms |
+  | Recientes del inicio | 489 ms | 48 ms |
+  | "Abiertos ahora" + categoría | 105 ms | 60 ms |
+  | Admin: publicados por última actualización | 43 ms | < 1 ms |
+
+  La causa era que `buscar_negocios` armaba el documento de búsqueda (negocio + categoría
+  + ciudad) de todos los negocios en cada llamada. Ahora vive en
+  `businesses.documento_busqueda` (trigger; se recalcula si cambian nombre, descripción,
+  barrio, categoría o ciudad, si el admin renombra la categoría, y ante cualquier intento
+  de escribirlo a mano) con un índice GIN parcial de publicados. La función arma la
+  consulta con los filtros reales (SQL dinámico con valores escapados) para que el
+  planificador use el índice que corresponde, y busca nombres y portada solo para la página
+  pedida. Las demás consultas (negocio por slug, fotos, reseñas, panel, estadísticas,
+  sitemap, reportes) ya usaban índices y tardan menos de 1 ms. Las políticas RLS evalúan
+  `auth.uid()` e `is_admin()` una sola vez por consulta (`(select …)`).
 - **URLs estables** (migración 014): si el admin cambia el slug, el anterior queda en
   `business_slug_redirects` y `/negocio/[viejo]` responde 308 hacia el nuevo.
 - **Ciudad en la URL** (migración 017): `/negocio/{nombre}-{ciudad}` (p. ej.
