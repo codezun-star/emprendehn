@@ -69,6 +69,8 @@ ejecutar sin romper nada.
    - *Reset password* → `supabase/templates/recuperacion.html` (asunto: `Restablece tu contraseña de EmprendeHN`)
 
    Los enlaces apuntan a `/auth/confirm?token_hash=…`, que es el flujo recomendado para SSR.
+   Las plantillas por defecto de Supabase (en inglés) también funcionan, pero su enlace solo
+   inicia sesión si se abre en el mismo navegador donde se hizo el registro o se pidió el cambio.
 4. **SMTP (antes de lanzar)**: el SMTP de Supabase permite muy pocos correos por hora.
    Configura Resend en *Authentication → Emails → SMTP Settings*: host `smtp.resend.com`,
    puerto `465`, usuario `resend` y tu API key de Resend como contraseña.

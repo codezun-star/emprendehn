@@ -13,11 +13,16 @@ const TIPOS_VALIDOS: EmailOtpType[] = ["signup", "email", "recovery", "invite", 
  *   {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email
  *   {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery
  * (ver supabase/templates/).
+ *
+ * También acepta el enlace de las plantillas por defecto de Supabase
+ * ({{ .ConfirmationURL }}): Supabase verifica el token y redirige aquí con
+ * ?code= (PKCE), que solo se puede canjear en el navegador donde se pidió.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const tokenHash = searchParams.get("token_hash");
   const tipo = searchParams.get("type") as EmailOtpType | null;
+  const codigo = searchParams.get("code");
 
   const destinoPorDefecto = tipo === "recovery" ? "/nueva-contrasena" : "/panel?aviso=cuenta-confirmada";
   const siguiente = rutaSegura(searchParams.get("siguiente"), destinoPorDefecto);
@@ -26,6 +31,13 @@ export async function GET(request: NextRequest) {
     const supabase = await crearClienteServidor();
     const { error } = await supabase.auth.verifyOtp({ type: tipo, token_hash: tokenHash });
     if (!error) redirect(siguiente);
+  } else if (codigo) {
+    const supabase = await crearClienteServidor();
+    const { error } = await supabase.auth.exchangeCodeForSession(codigo);
+    if (!error) redirect(siguiente);
+    // El enlace se abrió en otro navegador o dispositivo. Supabase ya verificó
+    // el correo, pero la sesión no se puede crear aquí.
+    if (error.code === "pkce_code_verifier_not_found") redirect("/ingresar?error=otro-navegador");
   }
 
   redirect("/ingresar?error=enlace-invalido");

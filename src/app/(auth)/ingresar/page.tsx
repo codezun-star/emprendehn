@@ -7,7 +7,11 @@ import { Alerta } from "@/components/ui/alerta";
 export const metadata: Metadata = { title: "Ingresar" };
 
 const MENSAJES: Record<string, string> = {
-  "enlace-invalido": "El enlace no es válido o ya expiró. Intenta de nuevo.",
+  "enlace-invalido":
+    "El enlace no es válido, ya se usó o expiró. Si tu cuenta ya está confirmada, inicia sesión aquí abajo.",
+  "otro-navegador":
+    "Abriste el enlace en otro navegador. Si era para confirmar tu cuenta, ya quedó confirmada: inicia sesión aquí abajo. " +
+    "Si era para cambiar tu contraseña, pide un enlace nuevo y ábrelo en este mismo navegador.",
 };
 
 export default async function PaginaIngresar({ searchParams }: PageProps<"/ingresar">) {
