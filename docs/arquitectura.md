@@ -282,6 +282,11 @@ penaliza Google.
   la ciudad anterior recupera su URL. El nombre en la URL no cambia al editar el nombre
   (URL estable); si hace falta, el admin la cambia a mano. Un slug manual del admin sin
   ciudad conserva su base y se le agrega la ciudad nueva.
+  Desde la migración 018 solo se guardan redirecciones de negocios que alguna vez se
+  publicaron (`aprobado_en`), y una URL vieja bloquea ese nombre para otros negocios
+  durante 12 meses; después otro negocio puede tomarla (si nadie la toma, sigue
+  redirigiendo). Cada redirección es una fila con índice por slug y nunca hay cadenas:
+  `slug_actual` lleva siempre directo a la URL vigente.
 - **Spam sin fricción** (`lib/antispam.ts`, `components/forms/antispam.tsx`): campo
   trampa invisible y tiempo mínimo en registro, recuperación y reportes; bloqueo de
   correos temporales en el registro. CAPTCHA de Turnstile en modo invisible, apagado

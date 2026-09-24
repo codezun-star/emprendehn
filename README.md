@@ -68,6 +68,7 @@ ejecutar sin romper nada.
 | 015 | `resenas` | Reseñas (`business_reviews`), respuesta del dueño, promedio y total en `businesses` |
 | 016 | `ubicacion_mapa` | Pin exacto (`latitud`, `longitud`, dentro de Honduras) y enlace de Google Maps del negocio |
 | 017 | `slug_con_ciudad` | La ciudad en la URL (`/negocio/{nombre}-{ciudad}`); al cambiar de ciudad, la URL anterior redirige |
+| 018 | `redirecciones_necesarias` | Sin redirecciones de negocios nunca publicados; una URL vieja queda reservada 12 meses |
 
 ### 3. Configuración de Supabase Auth (dashboard)
 
@@ -204,7 +205,7 @@ supabase/templates/       plantillas de correo de Auth
 El build **prerenderiza con datos reales** el inicio, `/categorias` y el sitemap. Por eso
 el orden importa:
 
-1. **Aplica las migraciones 001–017** en tu proyecto de Supabase. Si faltan, el build
+1. **Aplica las migraciones 001–018** en tu proyecto de Supabase. Si faltan, el build
    falla con el aviso "¿Ya aplicaste las migraciones…?".
 2. **Variables de entorno** en *Vercel → Project → Settings → Environment Variables*,
    marcando **Production** y **Preview**:
