@@ -68,7 +68,7 @@ ejecutar sin romper nada.
 3. **Authentication → Emails → Templates**: pega las plantillas en español. En proyectos del
    plan gratuito creados desde el 3 de junio de 2026, Supabase solo deja editarlas si ya
    configuraste SMTP propio (paso 4).
-   - *Confirm signup* → `supabase/templates/confirmacion.html` (asunto: `Confirma tu cuenta en EmprendeHN`)
+   - *Confirm sign up* → `supabase/templates/confirmacion.html` (asunto: `Confirma tu cuenta en EmprendeHN`)
    - *Reset password* → `supabase/templates/recuperacion.html` (asunto: `Restablece tu contraseña de EmprendeHN`)
 
    Los enlaces apuntan a `/auth/confirm?token_hash=…`, que es el flujo recomendado para SSR.
