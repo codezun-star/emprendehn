@@ -20,7 +20,7 @@ export default async function PaginaEditarNegocio({ params }: PageProps<"/panel/
 
   return (
     <div className="space-y-6">
-      {negocio.estado === "aprobado" && <AvisoPublicado />}
+      {negocio.estado === "aprobado" && <AvisoPublicado cambios={negocio.cambios_por_revisar} />}
       <FormularioNegocio
         negocioId={negocio.id}
         categorias={opciones.categorias}

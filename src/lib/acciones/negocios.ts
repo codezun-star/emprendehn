@@ -6,7 +6,8 @@ import { z } from "zod";
 import { eliminarArchivosNegocio } from "@/lib/archivos-negocio";
 import { obtenerSesion } from "@/lib/auth";
 import { avisoPorCambio, programarAvisoAdmin } from "@/lib/correos/avisos-admin";
-import { revalidarDirectorio } from "@/lib/revalidacion";
+import { describirCambios } from "@/lib/constantes";
+import { revalidarDirectorio, revalidarPanelNegocio } from "@/lib/revalidacion";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { falloValidacion, type ResultadoAccion } from "@/lib/validaciones/comun";
 import { limpiarRedes, negocioSchema, type NegocioInput, type NegocioOutput } from "@/lib/validaciones/negocio";
@@ -96,16 +97,23 @@ export async function actualizarNegocio(id: string, input: NegocioInput): Promis
   }
 
   // Rechazado o suspendido: el trigger lo devuelve a revisión (migración 010).
+  // El encabezado y los avisos del panel muestran "Cambios en revisión".
+  revalidarPanelNegocio(id);
+
   // Cambio de ciudad = cambio de URL (migración 017); la anterior redirige sola.
   const nuevaUrl =
     nuevo.estado === "aprobado" && nuevo.slug !== anterior.slug
       ? ` Tu página ahora está en /negocio/${nuevo.slug} (la dirección anterior lleva ahí automáticamente).`
       : "";
+  const enRevision =
+    nuevo.estado === "aprobado" && nuevo.cambios_por_revisar.length > 0
+      ? ` El equipo de EmprendeHN revisará: ${describirCambios(nuevo.cambios_por_revisar)}.`
+      : "";
   const mensaje =
     nuevo.estado === "pendiente" && anterior.estado !== "pendiente"
       ? "Cambios guardados. Tu negocio volvió a revisión."
       : nuevo.estado === "aprobado"
-        ? `Cambios guardados y publicados.${nuevaUrl}`
+        ? `Cambios guardados y publicados.${enRevision}${nuevaUrl}`
         : "Cambios guardados.";
   return { ok: true, mensaje };
 }

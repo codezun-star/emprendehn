@@ -37,6 +37,12 @@ export async function revalidarDirectorio(...refs: Array<RefNegocio | null | und
   for (const ruta of rutas) revalidatePath(ruta);
 }
 
+/** Pestañas del negocio en el panel del dueño (estado y "Cambios en revisión"). */
+export function revalidarPanelNegocio(negocioId: string) {
+  revalidatePath(`/panel/negocios/${negocioId}`, "layout");
+  revalidatePath("/panel");
+}
+
 /** Tras cambios en categorías (admin): todo el árbol de listados. */
 export function revalidarCategorias() {
   revalidatePath("/", "layout");

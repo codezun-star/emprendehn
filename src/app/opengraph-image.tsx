@@ -24,7 +24,7 @@ export default function ImagenOpenGraph() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ display: "flex", fontSize: 72, fontWeight: 800 }}>Emprende</div>
+          <div style={{ display: "flex", fontSize: 72, fontWeight: 800, color: COLORES.accent }}>Emprende</div>
           <img src={uriMarca()} width={88} height={88} alt="" />
         </div>
         <div style={{ marginTop: 40, fontSize: 44, lineHeight: 1.25, maxWidth: 900 }}>

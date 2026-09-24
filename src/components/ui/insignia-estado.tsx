@@ -32,6 +32,20 @@ export function InsigniaEstado({ estado, className }: { estado: EstadoNegocio; c
   );
 }
 
+/** Negocio publicado con cambios que el equipo todavía no revisa (migración 010). */
+export function InsigniaCambios({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900",
+        className,
+      )}
+    >
+      Cambios en revisión
+    </span>
+  );
+}
+
 export function InsigniaPlan({ plan }: { plan: string }) {
   if (plan === "gratis") return null;
   return (

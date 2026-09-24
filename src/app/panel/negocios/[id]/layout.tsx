@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { PestanasNegocio } from "@/components/panel/pestanas-negocio";
 import { Alerta } from "@/components/ui/alerta";
-import { InsigniaEstado } from "@/components/ui/insignia-estado";
+import { InsigniaCambios, InsigniaEstado } from "@/components/ui/insignia-estado";
 import { requerirUsuario } from "@/lib/auth";
 import { obtenerMiNegocio } from "@/lib/consultas/panel";
 
@@ -18,6 +18,7 @@ export default async function LayoutNegocio({ children, params }: LayoutProps<"/
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold text-brand-dark">{negocio.nombre}</h1>
           <InsigniaEstado estado={negocio.estado} />
+          {negocio.estado === "aprobado" && negocio.cambios_por_revisar.length > 0 && <InsigniaCambios />}
         </div>
       </div>
       <PestanasNegocio negocioId={negocio.id} />

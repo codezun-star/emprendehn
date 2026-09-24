@@ -5,9 +5,9 @@ import Link from "next/link";
 
 import { Alerta } from "@/components/ui/alerta";
 import { BotonEnlace } from "@/components/ui/boton";
-import { InsigniaEstado, InsigniaPlan } from "@/components/ui/insignia-estado";
+import { InsigniaCambios, InsigniaEstado, InsigniaPlan } from "@/components/ui/insignia-estado";
 import { requerirUsuario } from "@/lib/auth";
-import { MAX_NEGOCIOS_POR_CUENTA } from "@/lib/constantes";
+import { describirCambios, MAX_NEGOCIOS_POR_CUENTA } from "@/lib/constantes";
 import { obtenerCategorias, obtenerMunicipios } from "@/lib/consultas/directorio";
 import { contarResenasSinResponder, obtenerMisNegocios, obtenerResumenEstadisticas } from "@/lib/consultas/panel";
 import { urlImagen } from "@/lib/storage";
@@ -86,6 +86,7 @@ export default async function PaginaPanel({ searchParams }: PageProps<"/panel">)
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="truncate text-lg font-bold text-brand-dark">{n.nombre}</h2>
                       <InsigniaEstado estado={n.estado} />
+                      {n.estado === "aprobado" && n.cambios_por_revisar.length > 0 && <InsigniaCambios />}
                       <InsigniaPlan plan={n.plan} />
                     </div>
                     <p className="text-sm text-ink/60">
@@ -120,6 +121,12 @@ export default async function PaginaPanel({ searchParams }: PageProps<"/panel">)
                         <strong>{((stats?.whatsapp ?? 0) + (stats?.llamadas ?? 0)).toLocaleString("es-HN")}</strong> clics en
                         WhatsApp o Llamar
                       </p>
+                      {n.cambios_por_revisar.length > 0 && (
+                        <p className="mt-1">
+                          Estamos revisando tus últimos cambios ({describirCambios(n.cambios_por_revisar)}); ya se ven
+                          en tu página.
+                        </p>
+                      )}
                     </Alerta>
                   )}
                 </div>

@@ -21,7 +21,7 @@ export default async function PaginaGaleria({ params, searchParams }: PageProps<
           confianza y más contactos.
         </Alerta>
       )}
-      {negocio.estado === "aprobado" && <AvisoPublicado />}
+      {negocio.estado === "aprobado" && <AvisoPublicado cambios={negocio.cambios_por_revisar} />}
       <GestorGaleria
         negocioId={negocio.id}
         nombreNegocio={negocio.nombre}

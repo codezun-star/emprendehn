@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { obtenerSesion } from "@/lib/auth";
 import { avisoPorCambio, programarAvisoAdmin } from "@/lib/correos/avisos-admin";
-import { revalidarDirectorio } from "@/lib/revalidacion";
+import { revalidarDirectorio, revalidarPanelNegocio } from "@/lib/revalidacion";
 import { BUCKET_IMAGENES } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { falloValidacion, type ResultadoAccion } from "@/lib/validaciones/comun";
@@ -53,8 +53,16 @@ async function negocioPropio({ sesion, supabase }: Contexto, negocioId: string) 
   return data;
 }
 
-async function revalidarSiPublicado(negocio: { estado: string; slug: string; category_id: string; municipio_id: number }) {
-  if (negocio.estado === "aprobado") await revalidarDirectorio(negocio);
+async function revalidarSiPublicado(negocio: {
+  id: string;
+  estado: string;
+  slug: string;
+  category_id: string;
+  municipio_id: number;
+}) {
+  if (negocio.estado !== "aprobado") return;
+  await revalidarDirectorio(negocio);
+  revalidarPanelNegocio(negocio.id); // "Cambios en revisión" (fotos, logo)
 }
 
 /**

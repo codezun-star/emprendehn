@@ -13,7 +13,7 @@ export async function obtenerMisNegocios(userId: string) {
   const { data, error } = await supabase
     .from("businesses")
     .select(
-      "id, nombre, slug, estado, motivo_estado, plan, category_id, municipio_id, logo_path, created_at, updated_at, imagenes:business_images(count)",
+      "id, nombre, slug, estado, motivo_estado, plan, category_id, municipio_id, logo_path, cambios_por_revisar, created_at, updated_at, imagenes:business_images(count)",
     )
     .eq("owner_id", userId)
     .order("created_at", { ascending: true });

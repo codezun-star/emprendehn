@@ -256,8 +256,10 @@ penaliza Google.
   "Compartir" de Google Maps; los enlaces cortos `maps.app.goo.gl` se resuelven en el
   servidor siguiendo solo redirecciones a dominios de Google). El mapa del formulario se
   amplía a pantalla completa (la misma instancia de Leaflet cambia de tamaño) y la búsqueda
-  de colonias muestra hasta 5 lugares de la ciudad del negocio para elegir. "Cómo llegar" abre la ruta de
-  Google Maps o Waze a esas coordenadas y "Ver ficha en Google Maps" abre el enlace del dueño.
+  de colonias muestra hasta 5 lugares de la ciudad del negocio para elegir. "Cómo llegar" abre el pin
+  exacto en Google Maps (maps/search con las coordenadas; ahí la persona elige desde dónde:
+  la URL de rutas maps/dir no les funcionaba a los clientes) o la navegación de Waze, y
+  "Ver ficha en Google Maps" abre el enlace del dueño.
   Sin pin, la portada lleva a la dirección escrita y la búsqueda por texto queda como último
   recurso. Mapas con Leaflet + teselas de OpenStreetMap (sin llave de API), cargados solo al
   acercarse a la sección. La base valida que el pin esté dentro de Honduras y que el enlace
@@ -469,10 +471,13 @@ guardián en `businesses`:
 - Si el dueño edita un negocio **rechazado** o **suspendido** (o le agrega una foto), el
   trigger lo pasa a `pendiente` (reenvío automático a revisión). Desde la migración 010.
 - Si el dueño edita un negocio **aprobado**, el cambio se publica al instante. Si toca algo
-  sensible (nombre, descripción, categoría, ciudad, logo, redes o fotos nuevas), el trigger
-  lo anota en `cambios_por_revisar` y el negocio aparece en la cola "Cambios por revisar"
-  del admin (moderación posterior). Teléfono, WhatsApp, correo, horario y dirección no se
-  anotan. Cualquier cambio de estado del admin limpia la cola.
+  sensible (nombre, descripción, categoría, ciudad, ubicación en el mapa, logo, redes o
+  fotos nuevas), el trigger lo anota en `cambios_por_revisar` y el negocio aparece en la cola
+  "Cambios por revisar" del admin (moderación posterior). El dueño ve la insignia "Cambios
+  en revisión" con la lista de campos (en "Mis negocios", el encabezado del negocio y el
+  mensaje al guardar) hasta que el admin los marca como revisados. Teléfono, WhatsApp,
+  correo, horario y dirección escrita no se anotan. Cualquier cambio de estado del admin
+  limpia la cola.
 
 **Storage:** el bucket `business-images` es **público para lectura** (CDN rápido e
 indexable por Google Imágenes) y tiene políticas en `storage.objects`: solo se puede

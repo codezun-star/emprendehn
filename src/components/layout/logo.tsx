@@ -16,7 +16,7 @@ export function Logo({ className, claro = false }: { className?: string; claro?:
       aria-label="EmprendeHN, ir al inicio"
     >
       {/* "Emprende" + el logo HN en lugar de las letras */}
-      <span>Emprende</span>
+      <span className="text-accent">Emprende</span>
       <MarcaHN className="size-8" />
     </Link>
   );

@@ -65,9 +65,13 @@ export function extraerCoordenadas(url: string): Coordenadas | null {
   return null;
 }
 
-/** Navegación en Google Maps hasta el pin exacto. */
+/**
+ * "Cómo llegar" con Google Maps: abre el pin exacto y desde ahí la persona toca
+ * "Cómo llegar" y elige desde dónde, igual que en Waze. La URL de rutas
+ * (maps/dir/?api=1&destination=…) no les funcionaba a los clientes.
+ */
 export function enlaceComoLlegar({ lat, lng }: Coordenadas): string {
-  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  return `https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`;
 }
 
 /** Navegación en Waze (muy usado en Honduras). */
@@ -87,7 +91,7 @@ export function enlaceVerEnMapa(n: {
 }): string {
   if (n.enlace_mapa) return n.enlace_mapa;
   if (n.latitud != null && n.longitud != null) {
-    return `https://www.google.com/maps/search/?api=1&query=${n.latitud},${n.longitud}`;
+    return enlaceComoLlegar({ lat: n.latitud, lng: n.longitud });
   }
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(n.consultaTexto)}`;
 }
