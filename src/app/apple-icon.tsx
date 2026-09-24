@@ -1,29 +1,14 @@
 import { ImageResponse } from "next/og";
 
-import { COLORES } from "@/lib/marca";
+import { uriMarca } from "@/lib/marca";
 
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
 export default function AppleIcon() {
   return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: COLORES.accent,
-          color: COLORES.ink,
-          fontSize: 120,
-          fontWeight: 900,
-        }}
-      >
-        E
-      </div>
-    ),
+    // Cuadrado: iOS le aplica sus propias esquinas redondeadas.
+    <img src={uriMarca(0)} width={180} height={180} alt="" />,
     size,
   );
 }

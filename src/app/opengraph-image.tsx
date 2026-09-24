@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-import { COLORES } from "@/lib/marca";
+import { COLORES, uriMarca } from "@/lib/marca";
 
 export const alt = "EmprendeHN · Directorio de emprendedores y negocios de Honduras";
 export const size = { width: 1200, height: 630 };
@@ -24,22 +24,7 @@ export default function ImagenOpenGraph() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <div
-            style={{
-              width: 96,
-              height: 96,
-              borderRadius: 24,
-              background: COLORES.accent,
-              color: COLORES.ink,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 64,
-              fontWeight: 900,
-            }}
-          >
-            E
-          </div>
+          <img src={uriMarca()} width={96} height={96} alt="" />
           <div style={{ display: "flex", fontSize: 72, fontWeight: 800 }}>
             Emprende<span style={{ color: COLORES.accent }}>HN</span>
           </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Fragment, type ComponentType, type ReactNode } from "react";
 
 import { EstadoAbierto } from "@/components/directorio/estado-abierto";
+import { MarcaHN } from "@/components/layout/marca-hn";
 import { Mapa } from "@/components/mapas/mapa";
 import { clasesBoton } from "@/components/ui/boton";
 import type { Categoria, Municipio } from "@/lib/consultas/directorio";
@@ -586,9 +587,7 @@ export function PaginaNegocio({
       <footer className="@container bg-white">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-6 text-center text-xs text-ink/55 @3xl:flex-row @3xl:justify-between @3xl:text-left">
           <p className="inline-flex items-center gap-2">
-            <span aria-hidden className="grid size-5 shrink-0 place-items-center rounded bg-accent text-[10px] font-black text-ink">
-              E
-            </span>
+            <MarcaHN className="size-5" />
             <span>
               Página creada con{" "}
               <Link href="/" className="font-semibold text-ink/70 no-underline hover:text-brand hover:underline">

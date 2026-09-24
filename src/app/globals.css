@@ -11,6 +11,7 @@
   --color-brand-light: #f2f6f8; /* fondo general */
   --color-accent: #ff7a3d; /* CTAs, badges, premium (usar texto ink encima) */
   --color-ink: #1a1a1a; /* texto casi negro */
+  --color-bandera: #0073cf; /* azul de la bandera de Honduras: solo en el logo "HN" */
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
