@@ -564,6 +564,7 @@ export type Database = {
         }[]
       }
       slug_actual: { Args: { p_slug: string }; Returns: string }
+      slug_negocio_libre: { Args: { p_base: string; p_negocio: string }; Returns: string }
       slugify: { Args: { texto: string }; Returns: string }
     }
     Enums: {

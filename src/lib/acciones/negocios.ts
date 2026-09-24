@@ -96,11 +96,16 @@ export async function actualizarNegocio(id: string, input: NegocioInput): Promis
   }
 
   // Rechazado o suspendido: el trigger lo devuelve a revisión (migración 010).
+  // Cambio de ciudad = cambio de URL (migración 017); la anterior redirige sola.
+  const nuevaUrl =
+    nuevo.estado === "aprobado" && nuevo.slug !== anterior.slug
+      ? ` Tu página ahora está en /negocio/${nuevo.slug} (la dirección anterior lleva ahí automáticamente).`
+      : "";
   const mensaje =
     nuevo.estado === "pendiente" && anterior.estado !== "pendiente"
       ? "Cambios guardados. Tu negocio volvió a revisión."
       : nuevo.estado === "aprobado"
-        ? "Cambios guardados y publicados."
+        ? `Cambios guardados y publicados.${nuevaUrl}`
         : "Cambios guardados.";
   return { ok: true, mensaje };
 }

@@ -264,6 +264,13 @@ penaliza Google.
   sea de Google Maps; cambiarlo en un negocio publicado queda en "Cambios por revisar".
 - **URLs estables** (migración 014): si el admin cambia el slug, el anterior queda en
   `business_slug_redirects` y `/negocio/[viejo]` responde 308 hacia el nuevo.
+- **Ciudad en la URL** (migración 017): `/negocio/{nombre}-{ciudad}` (p. ej.
+  `baleadas-dona-marta-la-ceiba`). Ayuda un poco en búsquedas "negocio + ciudad", deja
+  URLs legibles y evita los `-2` cuando el nombre se repite en otra ciudad. Si el dueño
+  cambia de ciudad, en la URL cambia solo la ciudad y la anterior redirige (308); volver a
+  la ciudad anterior recupera su URL. El nombre en la URL no cambia al editar el nombre
+  (URL estable); si hace falta, el admin la cambia a mano. Un slug manual del admin sin
+  ciudad conserva su base y se le agrega la ciudad nueva.
 - **Spam sin fricción** (`lib/antispam.ts`, `components/forms/antispam.tsx`): campo
   trampa invisible y tiempo mínimo en registro, recuperación y reportes; bloqueo de
   correos temporales en el registro. CAPTCHA de Turnstile en modo invisible, apagado

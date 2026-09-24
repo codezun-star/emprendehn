@@ -7,13 +7,15 @@ select 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Tortillas Rosa', '', repeat('Des
        (select id from public.categories limit 1), (select id from public.municipios limit 1), '+50499999999', 'aprobado';
 create temp table neg as select id from public.businesses where owner_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 grant select on neg to anon, authenticated;
-select pruebas.t_ok((select slug = 'tortillas-rosa' from public.businesses where id = (select id from neg)), 'slug inicial generado');
+-- Desde 017 la URL lleva la ciudad: tortillas-rosa-{ciudad}.
+select m.slug as ciudad from public.businesses b join public.municipios m on m.id = b.municipio_id where b.id = (select id from neg) \gset
+select pruebas.t_ok((select slug = 'tortillas-rosa-' || :'ciudad' from public.businesses where id = (select id from neg)), 'slug inicial generado');
 
 -- 1. El admin cambia el slug: el viejo redirige
 update public.businesses set slug = 'panaderia-rosa' where id = (select id from neg);
-select pruebas.t_ok(exists (select 1 from public.business_slug_redirects where slug = 'tortillas-rosa'), 'se guarda el slug viejo');
+select pruebas.t_ok(exists (select 1 from public.business_slug_redirects where slug = 'tortillas-rosa-' || :'ciudad'), 'se guarda el slug viejo');
 set role anon;
-select pruebas.t_ok(public.slug_actual('tortillas-rosa') = 'panaderia-rosa', 'slug_actual resuelve el viejo al vigente');
+select pruebas.t_ok(public.slug_actual('tortillas-rosa-' || :'ciudad') = 'panaderia-rosa', 'slug_actual resuelve el viejo al vigente');
 select pruebas.t_ok(public.slug_actual('no-existe') is null, 'slug desconocido: null');
 do $$ begin
   perform 1 from public.business_slug_redirects;
@@ -26,13 +28,13 @@ reset role;
 insert into public.businesses (owner_id, nombre, slug, descripcion, category_id, municipio_id, telefono)
 select 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Tortillas Rosa', '', repeat('Descripción de prueba. ', 3),
        (select id from public.categories limit 1), (select id from public.municipios limit 1), '+50499999999';
-select pruebas.t_ok((select slug <> 'tortillas-rosa' and slug like 'tortillas-rosa-%'
+select pruebas.t_ok((select slug = 'tortillas-rosa-' || :'ciudad' || '-2'
   from public.businesses where owner_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' and id <> (select id from neg)),
   'un negocio nuevo evita el slug reservado');
 
 -- 3. Volver al slug anterior: deja de ser redirección y el intermedio pasa a serlo
-update public.businesses set slug = 'tortillas-rosa' where id = (select id from neg);
-select pruebas.t_ok(not exists (select 1 from public.business_slug_redirects where slug = 'tortillas-rosa')
+update public.businesses set slug = 'tortillas-rosa-' || :'ciudad' where id = (select id from neg);
+select pruebas.t_ok(not exists (select 1 from public.business_slug_redirects where slug = 'tortillas-rosa-' || :'ciudad')
   and exists (select 1 from public.business_slug_redirects where slug = 'panaderia-rosa'),
   'volver al slug anterior: se libera y el intermedio redirige');
 
