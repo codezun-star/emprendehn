@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { Migas } from "@/components/directorio/migas";
+import { ResumenCalificacion } from "@/components/resenas/estrellas";
 import type { Categoria, Municipio } from "@/lib/consultas/directorio";
 import { DIAS, describirTurnos, parsearHorario, tieneAlgunTurno } from "@/lib/horario";
 import type { Miga } from "@/lib/seo";
@@ -29,6 +30,8 @@ export type DatosPerfil = {
   logo_path: string | null;
   plan: string;
   imagenes: { id: string; storage_path: string; alt_text: string | null }[];
+  calificacion_promedio?: number | null;
+  total_resenas?: number;
 };
 
 const NOMBRES_REDES: Record<string, string> = {
@@ -71,6 +74,7 @@ export function PerfilNegocio({
   ciudad,
   barraContactoMovil = false,
   debajoDeContacto,
+  seccionResenas,
 }: {
   negocio: DatosPerfil;
   categoria: Categoria | undefined;
@@ -80,6 +84,8 @@ export function PerfilNegocio({
   barraContactoMovil?: boolean;
   /** Solo en la página pública (p. ej. "Reportar este negocio"). */
   debajoDeContacto?: ReactNode;
+  /** Solo en la página pública: lista y formulario de reseñas. */
+  seccionResenas?: ReactNode;
 }) {
   const horario = parsearHorario(negocio.horario);
   const redes = redesDe(negocio.redes_sociales);
@@ -138,6 +144,11 @@ export function PerfilNegocio({
               <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-ink">Destacado</span>
             )}
           </p>
+          {seccionResenas && (
+            <a href="#resenas" className="inline-block no-underline hover:underline">
+              <ResumenCalificacion promedio={negocio.calificacion_promedio ?? null} total={negocio.total_resenas ?? 0} />
+            </a>
+          )}
         </div>
       </header>
 
@@ -226,6 +237,8 @@ export function PerfilNegocio({
               Ver en Google Maps →
             </a>
           </section>
+
+          {seccionResenas}
         </div>
 
         <aside className="@4xl:sticky @4xl:top-20 @4xl:self-start">

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { PanelHeader } from "@/components/layout/panel-header";
 import { requerirAdmin } from "@/lib/auth";
-import { contarReportesAbiertos } from "@/lib/consultas/admin";
+import { contarReportesAbiertos, contarResenasReportadas } from "@/lib/consultas/admin";
 
 export const metadata: Metadata = {
   title: { default: "Administración", template: "%s · Admin | EmprendeHN" },
@@ -11,7 +11,11 @@ export const metadata: Metadata = {
 };
 
 export default async function LayoutAdmin({ children }: LayoutProps<"/admin">) {
-  const [sesion, reportesAbiertos] = await Promise.all([requerirAdmin(), contarReportesAbiertos()]);
+  const [sesion, reportesAbiertos, resenasReportadas] = await Promise.all([
+    requerirAdmin(),
+    contarReportesAbiertos(),
+    contarResenasReportadas(),
+  ]);
   return (
     <>
       <PanelHeader email={sesion.email} esAdmin seccion="admin" />
@@ -27,6 +31,12 @@ export default async function LayoutAdmin({ children }: LayoutProps<"/admin">) {
             Reportes
             {reportesAbiertos > 0 && (
               <span className="rounded-full bg-red-600 px-1.5 text-xs text-white">{reportesAbiertos}</span>
+            )}
+          </Link>
+          <Link href="/admin/resenas" className="flex items-center gap-1.5 py-3 text-brand-dark no-underline hover:text-brand">
+            Reseñas
+            {resenasReportadas > 0 && (
+              <span className="rounded-full bg-red-600 px-1.5 text-xs text-white">{resenasReportadas}</span>
             )}
           </Link>
         </nav>

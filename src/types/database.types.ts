@@ -15,6 +15,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      business_reviews: {
+        Row: {
+          autor_nombre: string
+          business_id: string
+          calificacion: number
+          comentario: string | null
+          created_at: string
+          estado: string
+          id: string
+          reportada: boolean
+          respondida_en: string | null
+          respuesta: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autor_nombre?: string
+          business_id: string
+          calificacion: number
+          comentario?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          reportada?: boolean
+          respondida_en?: string | null
+          respuesta?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          autor_nombre?: string
+          business_id?: string
+          calificacion?: number
+          comentario?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          reportada?: boolean
+          respondida_en?: string | null
+          respuesta?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_slug_redirects: {
         Row: { business_id: string; created_at: string; slug: string }
         Insert: { business_id: string; created_at?: string; slug: string }
@@ -152,6 +212,7 @@ export type Database = {
       businesses: {
         Row: {
           aprobado_en: string | null
+          calificacion_promedio: number | null
           cambios_por_revisar: string[]
           cambios_por_revisar_desde: string | null
           category_id: string
@@ -173,11 +234,13 @@ export type Database = {
           search_vector: unknown
           slug: string
           telefono: string | null
+          total_resenas: number
           updated_at: string
           whatsapp: string | null
         }
         Insert: {
           aprobado_en?: string | null
+          calificacion_promedio?: number | null
           cambios_por_revisar?: string[]
           cambios_por_revisar_desde?: string | null
           category_id: string
@@ -199,11 +262,13 @@ export type Database = {
           search_vector?: unknown
           slug: string
           telefono?: string | null
+          total_resenas?: number
           updated_at?: string
           whatsapp?: string | null
         }
         Update: {
           aprobado_en?: string | null
+          calificacion_promedio?: number | null
           cambios_por_revisar?: string[]
           cambios_por_revisar_desde?: string | null
           category_id?: string
@@ -225,6 +290,7 @@ export type Database = {
           search_vector?: unknown
           slug?: string
           telefono?: string | null
+          total_resenas?: number
           updated_at?: string
           whatsapp?: string | null
         }
@@ -444,6 +510,7 @@ export type Database = {
           p_texto?: string
         }
         Returns: {
+          calificacion_promedio: number | null
           categoria_nombre: string
           categoria_slug: string
           departamento_nombre: string
@@ -458,6 +525,7 @@ export type Database = {
           portada_path: string | null
           slug: string
           total: number
+          total_resenas: number
         }[]
       }
       construir_tsquery: { Args: { p_texto: string }; Returns: unknown }

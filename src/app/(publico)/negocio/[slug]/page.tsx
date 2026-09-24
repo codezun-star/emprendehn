@@ -6,12 +6,14 @@ import { PerfilNegocio } from "@/components/directorio/perfil-negocio";
 import { RastreoNegocio } from "@/components/directorio/rastreo-negocio";
 import { ReportarNegocio } from "@/components/directorio/reportar-negocio";
 import { RejillaNegocios } from "@/components/directorio/tarjeta-negocio";
+import { SeccionResenas } from "@/components/resenas/seccion-resenas";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
   buscarNegocios,
   obtenerCategorias,
   obtenerMunicipios,
   obtenerNegocioPublico,
+  obtenerResenasPublicas,
   obtenerSlugActual,
 } from "@/lib/consultas/directorio";
 import { jsonLdNegocio } from "@/lib/seo";
@@ -73,6 +75,7 @@ export async function generateMetadata({ params }: PageProps<"/negocio/[slug]">)
 export default async function PaginaNegocio({ params }: PageProps<"/negocio/[slug]">) {
   const { slug } = await params;
   const { negocio, categoria, categoriaPadre, ciudad } = await cargarNegocio(slug);
+  const resenas = await obtenerResenasPublicas(negocio.id);
 
   const { negocios: cercanos } = await buscarNegocios({
     categoria: categoria?.slug,
@@ -90,6 +93,7 @@ export default async function PaginaNegocio({ params }: PageProps<"/negocio/[slu
           categoria: categoria?.nombre ?? "",
           ciudad: ciudad?.nombre ?? "",
           departamento: ciudad?.departamento.nombre ?? "",
+          resenas: resenas.slice(0, 5),
         })}
       />
       <RastreoNegocio negocioId={negocio.id} />
@@ -100,6 +104,15 @@ export default async function PaginaNegocio({ params }: PageProps<"/negocio/[slu
         ciudad={ciudad}
         barraContactoMovil
         debajoDeContacto={<ReportarNegocio negocioId={negocio.id} nombre={negocio.nombre} />}
+        seccionResenas={
+          <SeccionResenas
+            negocioId={negocio.id}
+            slug={negocio.slug}
+            promedio={negocio.calificacion_promedio}
+            total={negocio.total_resenas}
+            resenas={resenas}
+          />
+        }
       />
       {relacionados.length > 0 && categoria && ciudad && (
         <section className="mx-auto max-w-6xl px-4 pb-8">

@@ -26,7 +26,8 @@ export type AvisoAdmin =
   | { tipo: "nuevo"; negocioId: string; nombre: string; dueno: string }
   | { tipo: "reenviado"; negocioId: string; nombre: string }
   | { tipo: "cambios"; negocioId: string; nombre: string; cambios: string[] }
-  | { tipo: "reporte"; negocioId: string; nombre: string; motivo: string; detalle: string | null };
+  | { tipo: "reporte"; negocioId: string; nombre: string; motivo: string; detalle: string | null }
+  | { tipo: "resena"; negocioId: string; nombre: string; calificacion: number; comentario: string | null };
 
 type Estado = { estado: string; cambios_por_revisar_desde: string | null };
 
@@ -113,6 +114,23 @@ function correoAviso(aviso: AvisoAdmin): Correo {
           texto: `Alguien reportó ${aviso.nombre}.\n\nMotivo: ${aviso.motivo}${aviso.detalle ? `\n${aviso.detalle}` : ""}`,
           boton: "Ver reportes",
           url: `${SITE_URL}/admin/reportes`,
+        };
+      case "resena":
+        return {
+          asunto: `Reseña reportada en ${aviso.nombre}`,
+          icono: "!",
+          titulo: "El dueño reportó una reseña",
+          cuerpo:
+            parrafo(`El dueño de <strong>${nombre}</strong> reportó esta reseña como abusiva:`) +
+            recuadro(
+              `<p style="margin:0;font-family:${FUENTE};font-size:16px;line-height:1.6;"><strong>${"★".repeat(aviso.calificacion)}${"☆".repeat(5 - aviso.calificacion)}</strong>${
+                aviso.comentario ? `<br>${textoMultilinea(aviso.comentario)}` : ""
+              }</p>`,
+            ) +
+            '<div style="height:24px;"></div>',
+          texto: `El dueño de ${aviso.nombre} reportó una reseña de ${aviso.calificacion} estrellas${aviso.comentario ? `:\n${aviso.comentario}` : "."}`,
+          boton: "Revisar reseñas",
+          url: `${SITE_URL}/admin/resenas`,
         };
     }
   })();

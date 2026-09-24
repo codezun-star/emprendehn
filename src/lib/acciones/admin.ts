@@ -134,6 +134,36 @@ export async function cambiarSlugNegocio(id: string, slug: string): Promise<Resu
   return { ok: true, mensaje: `URL actualizada. /negocio/${anterior.slug} ahora redirige a /negocio/${data.slug}.` };
 }
 
+/** Admin: oculta o vuelve a mostrar una reseña, o descarta el reporte del dueño. */
+export async function moderarResena(
+  id: string,
+  accion: "ocultar" | "mostrar" | "descartar-reporte",
+): Promise<ResultadoAccion> {
+  const supabase = await clienteAdmin();
+  if (!supabase) return NO_AUTORIZADO;
+  if (!z.uuid().safeParse(id).success) return { ok: false, error: "Reseña no encontrada." };
+
+  const cambios =
+    accion === "ocultar"
+      ? { estado: "oculta", reportada: false }
+      : accion === "mostrar"
+        ? { estado: "publicada" }
+        : { reportada: false };
+  const { data, error } = await supabase
+    .from("business_reviews")
+    .update(cambios)
+    .eq("id", id)
+    .select("business_id")
+    .maybeSingle();
+  if (error) return errorDeBaseDeDatos(error);
+  if (!data) return { ok: false, error: "Reseña no encontrada." };
+
+  const negocio = await negocioParaRevalidar(supabase, data.business_id);
+  if (negocio?.estado === "aprobado") await revalidarDirectorio(negocio);
+  const mensajes = { ocultar: "Reseña oculta.", mostrar: "Reseña publicada de nuevo.", "descartar-reporte": "Reporte descartado." };
+  return { ok: true, mensaje: mensajes[accion] };
+}
+
 /** Admin: marca un reporte como resuelto (o lo reabre). */
 export async function resolverReporte(id: string, resuelto: boolean): Promise<ResultadoAccion> {
   const supabase = await clienteAdmin();

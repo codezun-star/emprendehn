@@ -2,6 +2,7 @@ import { MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { ResumenCalificacion } from "@/components/resenas/estrellas";
 import type { ResultadoBusqueda } from "@/lib/consultas/directorio";
 import { urlImagen } from "@/lib/storage";
 import { resumir } from "@/lib/utils";
@@ -40,6 +41,7 @@ export function TarjetaNegocio({ negocio, prioridad = false }: { negocio: Result
             {negocio.nombre}
           </Link>
         </h3>
+        <ResumenCalificacion promedio={negocio.calificacion_promedio} total={negocio.total_resenas} className="text-xs" />
         <p className="line-clamp-2 text-sm text-ink/70">{resumir(negocio.descripcion, 140)}</p>
         <p className="mt-auto flex items-center gap-1 pt-2 text-xs text-ink/60">
           <MapPin className="size-3.5 shrink-0" aria-hidden />

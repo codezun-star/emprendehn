@@ -58,8 +58,10 @@ $$;
 comment on function public.esta_abierto(jsonb, timestamptz) is
   'true si el horario (formato de businesses.horario) está abierto en ese momento, en hora de Honduras.';
 
--- La firma cambia (nuevo parámetro): se elimina la versión de 009.
+-- La firma cambia (nuevo parámetro): se elimina la versión de 009 (y la propia,
+-- por si 015 ya le cambió el tipo de retorno y esta migración se vuelve a aplicar).
 drop function if exists public.buscar_negocios(text, text, text, int, int, text);
+drop function if exists public.buscar_negocios(text, text, text, int, int, text, boolean);
 
 create or replace function public.buscar_negocios(
   p_texto          text default null,

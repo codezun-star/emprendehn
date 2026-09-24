@@ -83,6 +83,9 @@ type DatosNegocioLd = {
   ciudad: string;
   departamento: string;
   categoria: string;
+  calificacion_promedio?: number | null;
+  total_resenas?: number;
+  resenas?: { autor_nombre: string; calificacion: number; comentario: string | null; created_at: string }[];
 };
 
 export function jsonLdNegocio(n: DatosNegocioLd) {
@@ -120,5 +123,23 @@ export function jsonLdNegocio(n: DatosNegocioLd) {
     }),
     ...(redes.length > 0 && { sameAs: redes }),
     knowsAbout: n.categoria,
+    ...(n.calificacion_promedio && n.total_resenas && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: n.calificacion_promedio,
+        reviewCount: n.total_resenas,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
+    ...(n.resenas?.length && {
+      review: n.resenas.map((r) => ({
+        "@type": "Review",
+        author: { "@type": "Person", name: r.autor_nombre },
+        datePublished: r.created_at.slice(0, 10),
+        reviewRating: { "@type": "Rating", ratingValue: r.calificacion, bestRating: 5, worstRating: 1 },
+        ...(r.comentario && { reviewBody: r.comentario }),
+      })),
+    }),
   };
 }

@@ -34,7 +34,7 @@ function errorDeConsulta(contexto: string, error: { message: string; code?: stri
   return new Error(
     `${contexto}: ${error.message}` +
       (faltaEsquema
-        ? " — ¿Ya aplicaste las migraciones de supabase/migrations (001–014) en este proyecto de Supabase?"
+        ? " — ¿Ya aplicaste las migraciones de supabase/migrations (001–015) en este proyecto de Supabase?"
         : ""),
   );
 }
@@ -91,7 +91,7 @@ export const obtenerDepartamentos = cache(async () => {
 const COLUMNAS_NEGOCIO = `
   id, nombre, slug, descripcion, category_id, municipio_id, localidad, direccion,
   telefono, whatsapp, email_contacto, redes_sociales, horario, logo_path, plan,
-  estado, aprobado_en, updated_at,
+  estado, aprobado_en, updated_at, calificacion_promedio, total_resenas,
   imagenes:business_images(id, storage_path, alt_text, orden, ancho, alto)
 ` as const;
 
@@ -205,3 +205,25 @@ export async function obtenerSlugActual(slugViejo: string): Promise<string | nul
   }
   return data ?? null;
 }
+
+export type ResenaPublica = {
+  id: string;
+  autor_nombre: string;
+  calificacion: number;
+  comentario: string | null;
+  respuesta: string | null;
+  created_at: string;
+};
+
+/** Reseñas publicadas más recientes de un negocio (migración 015). */
+export const obtenerResenasPublicas = cache(async (negocioId: string, limite = 20): Promise<ResenaPublica[]> => {
+  const { data, error } = await crearClientePublico()
+    .from("business_reviews")
+    .select("id, autor_nombre, calificacion, comentario, respuesta, created_at")
+    .eq("business_id", negocioId)
+    .eq("estado", "publicada")
+    .order("created_at", { ascending: false })
+    .limit(limite);
+  if (error) throw errorDeConsulta("No se pudieron cargar las reseñas", error);
+  return data;
+});

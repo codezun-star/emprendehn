@@ -7,7 +7,11 @@ import type { ResultadoAccion } from "@/lib/validaciones/comun";
 /** Traduce errores de Postgres/PostgREST a mensajes para el usuario. */
 export function errorDeBaseDeDatos(error: PostgrestError): ResultadoAccion<never> {
   // Errores de negocio lanzados por nuestros triggers (mensaje ya en español).
-  if (["limite_negocios", "limite_imagenes", "limite_reportes", "cuenta_admin"].includes(error.hint ?? "")) {
+  const PROPIOS = [
+    "limite_negocios", "limite_imagenes", "limite_reportes", "cuenta_admin",
+    "resena_propia", "resena_no_publicado", "limite_resenas",
+  ];
+  if (PROPIOS.includes(error.hint ?? "")) {
     return { ok: false, error: error.message, codigo: error.hint };
   }
   switch (error.code) {

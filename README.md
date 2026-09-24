@@ -65,6 +65,7 @@ ejecutar sin romper nada.
 | 012 | `estadisticas` | Visitas y clics de contacto por negocio y día (`business_stats_daily` + `registrar_evento`) |
 | 013 | `abierto_ahora` | `esta_abierto()` y filtro `p_abierto` en `buscar_negocios` |
 | 014 | `redirecciones_slug` | Redirección 308 de las URLs anteriores cuando el admin cambia el slug |
+| 015 | `resenas` | Reseñas (`business_reviews`), respuesta del dueño, promedio y total en `businesses` |
 
 ### 3. Configuración de Supabase Auth (dashboard)
 
@@ -200,7 +201,7 @@ supabase/templates/       plantillas de correo de Auth
 El build **prerenderiza con datos reales** el inicio, `/categorias` y el sitemap. Por eso
 el orden importa:
 
-1. **Aplica las migraciones 001–014** en tu proyecto de Supabase. Si faltan, el build
+1. **Aplica las migraciones 001–015** en tu proyecto de Supabase. Si faltan, el build
    falla con el aviso "¿Ya aplicaste las migraciones…?".
 2. **Variables de entorno** en *Vercel → Project → Settings → Environment Variables*,
    marcando **Production** y **Preview**:

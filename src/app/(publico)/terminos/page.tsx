@@ -25,7 +25,8 @@ export default function PaginaTerminos() {
       <h2>1. El servicio</h2>
       <p>
         EmprendeHN es un directorio en línea donde emprendedores y negocios de Honduras pueden publicar
-        un perfil con sus datos de contacto, y donde cualquier persona puede buscarlos. Actualmente el
+        un perfil con sus datos de contacto, y donde cualquier persona puede buscarlos y, con una
+        cuenta, dejarles reseñas. Actualmente el
         servicio es gratuito. Si en el futuro ofrecemos planes de pago, sus condiciones se informarán
         con claridad antes de que decidas contratarlos.
       </p>
@@ -72,7 +73,21 @@ export default function PaginaTerminos() {
         revisarlos después. Cualquier persona puede reportar un negocio, y revisaremos esos reportes.
       </p>
 
-      <h2>6. Relación entre clientes y negocios</h2>
+      <h2>6. Reseñas</h2>
+      <ul>
+        <li>Solo puedes dejar una reseña por negocio y debe contar una experiencia real con él.</li>
+        <li>No puedes reseñar tu propio negocio ni pedir o pagar reseñas falsas.</li>
+        <li>
+          No se permiten insultos, datos personales de terceros, spam ni contenido que no hable del
+          negocio.
+        </li>
+        <li>
+          El dueño del negocio puede responder públicamente y reportarnos una reseña. Podemos ocultar
+          las que incumplan estas reglas; las críticas honestas se quedan.
+        </li>
+      </ul>
+
+      <h2>7. Relación entre clientes y negocios</h2>
       <p>
         EmprendeHN solo facilita que clientes y negocios se encuentren. No vendemos los productos ni
         prestamos los servicios que se publican, y no participamos en los acuerdos, pagos o entregas
@@ -80,7 +95,7 @@ export default function PaginaTerminos() {
         podemos garantizar que toda la información sea exacta en todo momento.
       </p>
 
-      <h2>7. Responsabilidad</h2>
+      <h2>8. Responsabilidad</h2>
       <p>
         Ofrecemos el servicio &ldquo;tal cual&rdquo;. Hacemos lo posible para que funcione bien y sin
         interrupciones, pero no podemos garantizarlo. En la medida en que la ley lo permita, EmprendeHN no
@@ -88,20 +103,20 @@ export default function PaginaTerminos() {
         negocios.
       </p>
 
-      <h2>8. Suspensión y cancelación</h2>
+      <h2>9. Suspensión y cancelación</h2>
       <p>
         Puedes eliminar tus negocios o tu cuenta cuando quieras desde tu panel. Podemos suspender o
         eliminar negocios o cuentas que incumplan estos términos.
       </p>
 
-      <h2>9. Cambios a estos términos</h2>
+      <h2>10. Cambios a estos términos</h2>
       <p>
         Podemos actualizar estos términos. Publicaremos la nueva versión con su fecha y, si el cambio es
         importante, te avisaremos. Si sigues usando el servicio, se entiende que aceptas la nueva
         versión.
       </p>
 
-      <h2>10. Ley aplicable y contacto</h2>
+      <h2>11. Ley aplicable y contacto</h2>
       <p>
         Estos términos se rigen por las leyes de la República de Honduras. Para cualquier consulta,
         escríbenos a {correo}.

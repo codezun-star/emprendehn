@@ -1,4 +1,4 @@
-import { BarChart3, ExternalLink, Images, Pencil, Plus, Store } from "lucide-react";
+import { BarChart3, ExternalLink, Images, MessageSquareQuote, Pencil, Plus, Store } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { InsigniaEstado, InsigniaPlan } from "@/components/ui/insignia-estado";
 import { requerirUsuario } from "@/lib/auth";
 import { MAX_NEGOCIOS_POR_CUENTA } from "@/lib/constantes";
 import { obtenerCategorias, obtenerMunicipios } from "@/lib/consultas/directorio";
-import { obtenerMisNegocios, obtenerResumenEstadisticas } from "@/lib/consultas/panel";
+import { contarResenasSinResponder, obtenerMisNegocios, obtenerResumenEstadisticas } from "@/lib/consultas/panel";
 import { urlImagen } from "@/lib/storage";
 
 export const metadata: Metadata = { title: "Mis negocios" };
@@ -28,7 +28,11 @@ export default async function PaginaPanel({ searchParams }: PageProps<"/panel">)
     obtenerCategorias(),
     obtenerMunicipios(),
   ]);
-  const estadisticas = await obtenerResumenEstadisticas(negocios.filter((n) => n.estado === "aprobado").map((n) => n.id));
+  const publicados = negocios.filter((n) => n.estado === "aprobado").map((n) => n.id);
+  const [estadisticas, sinResponder] = await Promise.all([
+    obtenerResumenEstadisticas(publicados),
+    contarResenasSinResponder(publicados),
+  ]);
   const mensaje = typeof aviso === "string" ? AVISOS[aviso] : undefined;
   const nombre = sesion.perfil?.nombre_completo?.split(" ")[0];
 
@@ -129,6 +133,14 @@ export default async function PaginaPanel({ searchParams }: PageProps<"/panel">)
                   </BotonEnlace>
                   <BotonEnlace href={`/panel/negocios/${n.id}/estadisticas`} variante="secundario" tamano="sm">
                     <BarChart3 className="size-4" aria-hidden /> Estadísticas
+                  </BotonEnlace>
+                  <BotonEnlace href={`/panel/negocios/${n.id}/resenas`} variante="secundario" tamano="sm">
+                    <MessageSquareQuote className="size-4" aria-hidden /> Reseñas
+                    {(sinResponder.get(n.id) ?? 0) > 0 && (
+                      <span className="rounded-full bg-accent px-1.5 text-xs font-bold text-ink">
+                        {sinResponder.get(n.id)} sin responder
+                      </span>
+                    )}
                   </BotonEnlace>
                   <BotonEnlace
                     href={n.estado === "aprobado" ? `/negocio/${n.slug}` : `/panel/negocios/${n.id}/vista-previa`}

@@ -15,7 +15,7 @@ export default function PaginaRegistro() {
       <div className="space-y-1 text-center">
         <h1 className="text-2xl font-bold text-brand-dark">Crea tu cuenta</h1>
         <p className="text-sm text-ink/70">
-          Es gratis. Después de confirmar tu correo podrás registrar tu negocio.
+          Es gratis. Con tu cuenta puedes registrar tu negocio y dejar reseñas.
         </p>
       </div>
       <BotonGoogle />

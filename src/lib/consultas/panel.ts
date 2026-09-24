@@ -108,3 +108,33 @@ export async function obtenerResumenEstadisticas(negocioIds: string[]) {
   }
   return resumen;
 }
+
+// ---------------------------------------------------------------------------
+// Reseñas (migración 015). RLS deja al dueño ver todas las de sus negocios.
+// ---------------------------------------------------------------------------
+
+export async function obtenerResenasDeMiNegocio(negocioId: string) {
+  const supabase = await crearClienteServidor();
+  const { data, error } = await supabase
+    .from("business_reviews")
+    .select("id, autor_nombre, calificacion, comentario, respuesta, respondida_en, estado, reportada, created_at")
+    .eq("business_id", negocioId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(`No se pudieron cargar las reseñas: ${error.message}`);
+  return data;
+}
+
+/** Reseñas publicadas sin respuesta, por negocio (para avisar en "Mis negocios"). */
+export async function contarResenasSinResponder(negocioIds: string[]) {
+  const conteo = new Map<string, number>();
+  if (negocioIds.length === 0) return conteo;
+  const supabase = await crearClienteServidor();
+  const { data } = await supabase
+    .from("business_reviews")
+    .select("business_id")
+    .in("business_id", negocioIds)
+    .eq("estado", "publicada")
+    .is("respuesta", null);
+  for (const fila of data ?? []) conteo.set(fila.business_id, (conteo.get(fila.business_id) ?? 0) + 1);
+  return conteo;
+}

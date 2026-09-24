@@ -25,6 +25,7 @@ export function EliminarCuenta({ totalNegocios }: { totalNegocios: number }) {
               ? "Tus negocios (no tienes ninguno registrado)."
               : `Tus ${totalNegocios === 1 ? "negocio" : `${totalNegocios} negocios`}, con sus páginas públicas y todas sus fotos.`}
           </li>
+          <li>Las reseñas que hayas escrito.</li>
         </ul>
         <p className="mt-2 text-sm font-semibold text-ink/80">Esta acción no se puede deshacer.</p>
       </div>

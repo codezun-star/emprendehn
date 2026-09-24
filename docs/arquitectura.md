@@ -83,6 +83,7 @@ src/
       negocios/[id]/page.tsx      # editar datos + horario
       negocios/[id]/galeria/page.tsx
       negocios/[id]/estadisticas/page.tsx  # visitas y clics de contacto (últimos 30 días)
+      negocios/[id]/resenas/page.tsx       # responder y reportar reseñas
       cuenta/page.tsx             # datos de la cuenta + eliminar cuenta
     admin/                        # requiere rol admin
       layout.tsx
@@ -90,6 +91,7 @@ src/
       negocios/[id]/page.tsx      # revisar / aprobar / rechazar / suspender
       categorias/page.tsx
       reportes/page.tsx           # reportes de visitantes (abiertos / resueltos)
+      resenas/page.tsx            # reseñas reportadas por dueños y recientes (ocultar / mostrar)
     (publico)/privacidad, terminos, contacto, cuenta-eliminada
     api/eventos/route.ts          # recibe visitas y clics (sendBeacon) -> registrar_evento
     sitemap.ts
@@ -230,6 +232,14 @@ penaliza Google.
 - **"Abierto ahora"** (migración 013): `esta_abierto()` repite en SQL la regla de
   `EstadoAbierto` (hora de Honduras, turnos que cruzan la medianoche) para filtrar en
   `/buscar?abierto=1`.
+- **Reseñas** (migración 015): una por usuario y negocio publicado, visibles al instante
+  (moderación posterior: el admin las oculta). Se muestran con primer nombre + inicial.
+  El dueño responde y puede reportar; no puede reseñar su negocio ni tocar su promedio
+  (`calificacion_promedio` y `total_resenas` los mantiene un trigger). La página del
+  negocio es estática, así que el formulario consulta la sesión en el navegador; las
+  reglas las aplica la base de datos. No se avisa al dueño por correo de cada reseña:
+  leer su correo requeriría la secret key de Supabase en el servidor; en su panel ve
+  cuántas tiene sin responder.
 - **URLs estables** (migración 014): si el admin cambia el slug, el anterior queda en
   `business_slug_redirects` y `/negocio/[viejo]` responde 308 hacia el nuevo.
 - **Spam sin fricción** (`lib/antispam.ts`, `components/forms/antispam.tsx`): campo

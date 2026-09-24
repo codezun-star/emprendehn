@@ -37,6 +37,11 @@ export default function PaginaPrivacidad() {
         puede verlos en el directorio y en buscadores como Google.
       </p>
       <p>
+        <strong>Si dejas una reseña:</strong> tu calificación y tu comentario se publican junto con tu
+        primer nombre y la inicial de tu apellido (por ejemplo, &ldquo;María L.&rdquo;). Nunca mostramos tu
+        correo. El dueño del negocio puede responderla.
+      </p>
+      <p>
         <strong>Si reportas un negocio:</strong> el motivo, tu comentario y, solo si lo escribes, un
         correo para contactarte.
       </p>
@@ -109,7 +114,8 @@ export default function PaginaPrivacidad() {
         <li><strong>Eliminar un negocio</strong> desde su página de edición.</li>
         <li>
           <strong>Eliminar tu cuenta</strong> desde <Link href="/panel/cuenta">Mi cuenta</Link>: se borran
-          tu cuenta, tus negocios y sus fotos.
+          tu cuenta, tus negocios, sus fotos y tus reseñas. También puedes borrar una reseña desde la
+          página del negocio.
         </li>
         <li>
           <strong>Pedirnos una copia</strong> de tus datos o cualquier otra consulta sobre ellos,

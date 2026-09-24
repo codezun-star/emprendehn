@@ -122,3 +122,25 @@ export async function listarReportes(estado: "abierto" | "resuelto") {
   if (error) throw new Error(`No se pudieron cargar los reportes: ${error.message}`);
   return data;
 }
+
+export async function contarResenasReportadas() {
+  const supabase = await crearClienteServidor();
+  const { count } = await supabase
+    .from("business_reviews")
+    .select("id", { count: "exact", head: true })
+    .eq("reportada", true);
+  return count ?? 0;
+}
+
+export async function listarResenasAdmin(vista: "reportadas" | "recientes") {
+  const supabase = await crearClienteServidor();
+  let consulta = supabase
+    .from("business_reviews")
+    .select("id, autor_nombre, calificacion, comentario, respuesta, estado, reportada, created_at, negocio:businesses(id, nombre, slug)")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (vista === "reportadas") consulta = consulta.eq("reportada", true);
+  const { data, error } = await consulta;
+  if (error) throw new Error(`No se pudieron cargar las reseñas: ${error.message}`);
+  return data;
+}
