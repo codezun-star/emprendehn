@@ -64,16 +64,20 @@ ejecutar sin romper nada.
      Los enlaces de los correos usan esta URL.
    - *Redirect URLs*: `http://localhost:3000/**` y `https://emprendehn.com/**`.
 2. **Authentication → Sign In / Providers → Email**: deja activado *Confirm email*.
-3. **Authentication → Emails → Templates**: pega las plantillas en español.
+3. **Authentication → Emails → Templates**: pega las plantillas en español. En proyectos del
+   plan gratuito creados desde el 3 de junio de 2026, Supabase solo deja editarlas si ya
+   configuraste SMTP propio (paso 4).
    - *Confirm signup* → `supabase/templates/confirmacion.html` (asunto: `Confirma tu cuenta en EmprendeHN`)
    - *Reset password* → `supabase/templates/recuperacion.html` (asunto: `Restablece tu contraseña de EmprendeHN`)
 
    Los enlaces apuntan a `/auth/confirm?token_hash=…`, que es el flujo recomendado para SSR.
    Las plantillas por defecto de Supabase (en inglés) también funcionan, pero su enlace solo
    inicia sesión si se abre en el mismo navegador donde se hizo el registro o se pidió el cambio.
-4. **SMTP (antes de lanzar)**: el SMTP de Supabase permite muy pocos correos por hora.
+4. **SMTP (antes de lanzar)**: el SMTP de Supabase solo envía 2 correos por hora para todo el
+   proyecto; al pasarlo, el registro muestra "se alcanzó el límite de envíos por hora".
    Configura Resend en *Authentication → Emails → SMTP Settings*: host `smtp.resend.com`,
-   puerto `465`, usuario `resend` y tu API key de Resend como contraseña.
+   puerto `465`, usuario `resend` y tu API key de Resend como contraseña. Con SMTP propio el
+   límite arranca en 30 por hora; súbelo en *Authentication → Rate Limits*.
 5. *(Recomendado)* **Attack Protection**: activa CAPTCHA (Turnstile o hCaptcha) para frenar
    registros automatizados.
 

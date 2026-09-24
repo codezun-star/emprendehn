@@ -32,6 +32,7 @@ function traducirErrorAuth(error: AuthError): string {
     case "same_password":
       return "La nueva contraseña debe ser distinta a la anterior.";
     case "over_email_send_rate_limit":
+      return "Por ahora no podemos enviar más correos: se alcanzó el límite de envíos por hora. Vuelve a intentarlo más tarde.";
     case "over_request_rate_limit":
       return "Demasiados intentos. Espera unos minutos y vuelve a intentarlo.";
     case "signup_disabled":
