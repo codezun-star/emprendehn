@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { obtenerSesion } from "@/lib/auth";
+import { enviarCorreo, type ResultadoEnvio } from "@/lib/correos/enviar";
+import { correoNegocioAprobado } from "@/lib/correos/negocio-aprobado";
 import { revalidarCategorias, revalidarDirectorio } from "@/lib/revalidacion";
 import { BUCKET_IMAGENES } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
@@ -46,6 +48,16 @@ export async function moderarNegocio(
   if (!parsed.success) return falloValidacion(parsed.error);
   const { estado, motivo } = parsed.data;
 
+  // Estado anterior (para avisar solo cuando se publica) y datos del correo. Si esta
+  // lectura falla, se modera igual y solo se omite el aviso.
+  const { data: anterior, error: errorAnterior } = await supabase
+    .from("businesses")
+    .select("estado, nombre, dueno:profiles(email, nombre_completo), categoria:categories(nombre), municipio:municipios(nombre)")
+    .eq("id", id)
+    .maybeSingle();
+  if (errorAnterior) console.error("[moderarNegocio] Sin datos para el aviso por correo:", errorAnterior.message);
+  else if (!anterior) return { ok: false, error: "Negocio no encontrado." };
+
   const { data, error } = await supabase
     .from("businesses")
     .update({
@@ -59,7 +71,22 @@ export async function moderarNegocio(
 
   // Aprobar publica la página; rechazar/suspender la retira (404 en la próxima visita).
   await revalidarDirectorio(data);
-  // TODO(email): notificar al emprendedor vía Resend cuando se implementen los correos.
+
+  if (estado === "aprobado" && anterior && anterior.estado !== "aprobado" && anterior.dueno?.email) {
+    const envio = await enviarCorreo(
+      anterior.dueno.email,
+      correoNegocioAprobado({
+        negocioId: id,
+        nombreNegocio: anterior.nombre,
+        slug: data.slug,
+        nombreDueno: anterior.dueno.nombre_completo,
+        categoria: anterior.categoria?.nombre ?? null,
+        ciudad: anterior.municipio?.nombre ?? null,
+      }),
+    );
+    return { ok: true, mensaje: `Negocio aprobado y publicado. ${AVISO_CORREO[envio](anterior.dueno.email)}` };
+  }
+
   const mensajes = {
     aprobado: "Negocio aprobado y publicado.",
     rechazado: "Negocio rechazado. El emprendedor verá el motivo en su panel.",
@@ -68,6 +95,12 @@ export async function moderarNegocio(
   } as const;
   return { ok: true, mensaje: mensajes[estado] };
 }
+
+const AVISO_CORREO: Record<ResultadoEnvio, (email: string) => string> = {
+  enviado: (email) => `Le avisamos por correo a ${email}.`,
+  "sin-configurar": () => "No se envió el aviso por correo: falta configurar RESEND_API_KEY.",
+  error: (email) => `No se pudo enviar el aviso por correo a ${email} (revisa los logs de Vercel).`,
+};
 
 export async function cambiarPlan(id: string, input: z.input<typeof planSchema>): Promise<ResultadoAccion> {
   const supabase = await clienteAdmin();

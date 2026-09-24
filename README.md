@@ -37,6 +37,7 @@ cp .env.example .env.local   # completar URL y publishable key de Supabase
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<project-ref>.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` (la anon key legacy también funciona) |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` en desarrollo y `https://emprendehn.com` en producción |
+| `RESEND_API_KEY` | Opcional en desarrollo. API key de Resend para el aviso "tu negocio fue aprobado"; sin ella se aprueba igual, pero no se envía el correo |
 
 No se necesita la service role key: todo, incluido el panel de admin, pasa por RLS.
 
@@ -179,6 +180,9 @@ el orden importa:
    - `NEXT_PUBLIC_SITE_URL` = `https://emprendehn.com` (solo en Production). Si no la
      defines, se usa el dominio de producción del proyecto en Vercel y, en los previews,
      la URL de cada deploy.
+   - `RESEND_API_KEY` (solo en Production): API key de Resend con permiso *Sending access*
+     para `emprendehn.com`. Usa una distinta a la del SMTP de Supabase para poder revocarlas
+     por separado. Al aprobar un negocio, el panel de admin indica si el aviso se envió.
 
    `.env.local` no se sube a GitHub (está en `.gitignore`), así que Vercel no lo ve. Las
    variables `NEXT_PUBLIC_*` se incrustan al compilar: si las agregas o cambias,
@@ -206,5 +210,6 @@ CLI + Docker en el entorno de desarrollo), nunca contra el proyecto real:
 
 Pagos y suscripciones (`subscriptions`), destacados pagados por categoría/ciudad
 (`featured_placements`), dominio personalizado por negocio (`business_domains`), reseñas,
-catálogo de productos, notificaciones por correo (ver `src/lib/email.ts`) y blog. El
+catálogo de productos, más notificaciones por correo (rechazo, suspensión; ver
+`src/lib/correos/`) y blog. El
 esquema ya los contempla: ver `docs/arquitectura.md` §3.6.

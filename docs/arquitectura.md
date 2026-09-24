@@ -105,7 +105,7 @@ src/
     acciones/                     # server actions: negocio.ts, galeria.ts, admin.ts, auth.ts
     seo/                          # jsonld.ts, metadata.ts
     utils/                        # whatsapp.ts, telefono.ts, horario.ts
-    email/                        # interfaz vacía, lista para Resend (no se implementa en el MVP)
+    correos/                      # correos propios vía API de Resend (enviar.ts, plantilla.ts, negocio-aprobado.ts)
   types/
     database.types.ts             # tipos del esquema (escritos a mano, regenerables con supabase gen types)
   proxy.ts                        # Next 16 renombró middleware.ts → proxy.ts
@@ -210,8 +210,10 @@ penaliza Google.
 - **Resend:** los correos de Auth (confirmación, recuperación) se conectan a Resend por
   **SMTP personalizado en el dashboard de Supabase**, sin código. Esto es importante para
   producción, porque el SMTP por defecto de Supabase tiene un límite de envío muy bajo.
-  Los correos de la aplicación (p. ej. "tu negocio fue aprobado") quedan para después;
-  `lib/email/` solo define la interfaz.
+  Los correos propios de la aplicación van por la API de Resend (`lib/correos/`, con
+  `RESEND_API_KEY`). Por ahora solo hay uno: el aviso "tu negocio fue aprobado", que
+  `moderarNegocio` envía cuando un negocio pasa a `aprobado`. Si el envío falla, la
+  aprobación no se deshace; el panel de admin muestra el resultado.
 - Tendrás que ajustar las plantillas de email en el dashboard. Te daré el texto exacto
   cuando lleguemos a ese paso.
 
@@ -221,6 +223,7 @@ penaliza Google.
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=   # sb_publishable_… (la anon key legacy también funciona aquí)
 NEXT_PUBLIC_SITE_URL=http://localhost:3000   # https://emprendehn.com en producción
+RESEND_API_KEY=                               # solo servidor; aviso de negocio aprobado
 ```
 
 **No hace falta la service role / secret key en el MVP.** Todo, admin incluido, pasa por
