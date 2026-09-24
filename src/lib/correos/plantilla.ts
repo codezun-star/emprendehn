@@ -114,7 +114,7 @@ export function documentoCorreo({
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
         <tr>
           <td align="center" style="padding:0 0 24px;font-family:${FUENTE};font-size:26px;font-weight:800;letter-spacing:-0.5px;color:${COLORES.brandDark};">
-            <a href="${urlSitio}" target="_blank" style="color:${COLORES.brandDark};text-decoration:none;">Emprende<span style="color:${COLORES.accent};">HN</span></a>
+            <a href="${urlSitio}" target="_blank" style="color:${COLORES.brandDark};text-decoration:none;">Emprende<img src="${urlSitio}/logo-hn.png" width="30" height="30" alt="HN" style="display:inline-block;vertical-align:middle;margin:0 0 4px 4px;border:0;outline:none;"></a>
           </td>
         </tr>
         <tr>

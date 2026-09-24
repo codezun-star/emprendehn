@@ -23,11 +23,9 @@ export default function ImagenOpenGraph() {
           color: "white",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <img src={uriMarca()} width={96} height={96} alt="" />
-          <div style={{ display: "flex", fontSize: 72, fontWeight: 800 }}>
-            Emprende<span style={{ color: COLORES.accent }}>HN</span>
-          </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ display: "flex", fontSize: 72, fontWeight: 800 }}>Emprende</div>
+          <img src={uriMarca()} width={88} height={88} alt="" />
         </div>
         <div style={{ marginTop: 40, fontSize: 44, lineHeight: 1.25, maxWidth: 900 }}>
           Encuentra negocios y emprendedores en Honduras
