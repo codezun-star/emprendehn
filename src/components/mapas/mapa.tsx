@@ -176,11 +176,11 @@ export function Mapa({
   }, [listo, centro.lat, centro.lng, zoomCentro]);
 
   return (
-    <div
-      ref={contenedor}
-      role="region"
-      aria-label={etiqueta}
-      className={cn("relative z-0 overflow-hidden bg-brand-light", className)}
-    />
+    <div role="region" aria-label={etiqueta} className={cn("relative z-0 overflow-hidden bg-brand-light", className)}>
+      {/* Leaflet le agrega sus clases (leaflet-container…) a este div. Su className
+          no debe cambiar nunca: si React lo reescribe, las borra y las teselas
+          quedan con ancho 0 (mapa en blanco). Tamaño, bordes, etc. van afuera. */}
+      <div ref={contenedor} className="absolute inset-0" />
+    </div>
   );
 }
