@@ -68,7 +68,8 @@ src/
       categorias/page.tsx         # índice de todas las categorías (enlazado interno)
       categoria/[categoria]/page.tsx
       categoria/[categoria]/[ciudad]/page.tsx
-      negocio/[slug]/page.tsx
+    (negocio)/                    # layout vacío: la página del negocio trae su barra y su pie
+      negocio/[slug]/page.tsx     # PaginaNegocio: portada, fotos, horario, mapa, reseñas, contacto
     (auth)/
       ingresar/page.tsx
       registro/page.tsx
@@ -122,8 +123,9 @@ docs/
 ```
 
 Por qué:
-- **Route groups** `(publico)` y `(auth)`: cada grupo tiene su layout sin que el nombre
-  aparezca en la URL.
+- **Route groups** `(publico)`, `(negocio)` y `(auth)`: cada grupo tiene su layout sin que
+  el nombre aparezca en la URL. `(negocio)` no lleva el header/footer del directorio: la
+  página de cada negocio se ve como un sitio propio para sus clientes.
 - **URLs en español** (`/categoria`, `/negocio`, `/ingresar`), porque las palabras clave
   en la URL ayudan un poco al SEO local y son más claras para el usuario hondureño.
 - **Tres clientes de Supabase.** El punto clave es `publico.ts`: si una página pública
@@ -240,6 +242,24 @@ penaliza Google.
   reglas las aplica la base de datos. No se avisa al dueño por correo de cada reseña:
   leer su correo requeriría la secret key de Supabase en el servidor; en su panel ve
   cuántas tiene sin responder.
+- **Página del negocio como sitio propio** (`components/negocio/`): portada a pantalla
+  completa con la primera foto, barra con el logo y nombre del negocio (se vuelve blanca al
+  bajar), datos rápidos, galería con visor, horario con el día de hoy resaltado, mapa,
+  reseñas y contacto. EmprendeHN solo aparece en una franja discreta al pie ("Página creada
+  con EmprendeHN", "Más {categoría} en {ciudad}", "Crea tu página gratis", reportar). Las
+  migas ya no se ven, pero siguen en JSON-LD. El mismo componente se usa en la vista previa
+  del panel y en la revisión del admin (`modo="vista-previa"`: sin barras fijas); el diseño
+  depende del ancho del contenedor (`@container`), no de la ventana.
+- **Ubicación exacta** (migración 016): buscar por nombre en Google Maps llevaba a otro
+  negocio con el mismo nombre (muy común en Honduras). Ahora el dueño coloca un pin
+  (tocando el mapa, con su ubicación actual, escribiendo coordenadas o pegando el enlace de
+  "Compartir" de Google Maps; los enlaces cortos `maps.app.goo.gl` se resuelven en el
+  servidor siguiendo solo redirecciones a dominios de Google). "Cómo llegar" abre la ruta de
+  Google Maps o Waze a esas coordenadas y "Ver ficha en Google Maps" abre el enlace del dueño.
+  Sin pin, la portada lleva a la dirección escrita y la búsqueda por texto queda como último
+  recurso. Mapas con Leaflet + teselas de OpenStreetMap (sin llave de API), cargados solo al
+  acercarse a la sección. La base valida que el pin esté dentro de Honduras y que el enlace
+  sea de Google Maps; cambiarlo en un negocio publicado queda en "Cambios por revisar".
 - **URLs estables** (migración 014): si el admin cambia el slug, el anterior queda en
   `business_slug_redirects` y `/negocio/[viejo]` responde 308 hacia el nuevo.
 - **Spam sin fricción** (`lib/antispam.ts`, `components/forms/antispam.tsx`): campo

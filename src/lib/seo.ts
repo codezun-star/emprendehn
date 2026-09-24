@@ -1,5 +1,6 @@
 import { SITE_NAME, SITE_URL } from "@/lib/env";
 import { aOpeningHoursSpecification, parsearHorario, tieneAlgunTurno } from "@/lib/horario";
+import { enlaceVerEnMapa } from "@/lib/mapas";
 import { urlImagen } from "@/lib/storage";
 import type { Json } from "@/types/database.types";
 
@@ -78,6 +79,9 @@ type DatosNegocioLd = {
   horario: Json | null;
   redes_sociales: Json;
   logo_path: string | null;
+  latitud?: number | null;
+  longitud?: number | null;
+  enlace_mapa?: string | null;
   imagenes: { storage_path: string }[];
   schemaType: string;
   ciudad: string;
@@ -96,6 +100,8 @@ export function jsonLdNegocio(n: DatosNegocioLd) {
       ? Object.values(n.redes_sociales).filter((v): v is string => typeof v === "string")
       : [];
   const imagenes = n.imagenes.map((i) => urlImagen(i.storage_path));
+  const punto = n.latitud != null && n.longitud != null ? { lat: n.latitud, lng: n.longitud } : null;
+  const mapa = n.enlace_mapa || punto ? enlaceVerEnMapa({ ...n, consultaTexto: "" }) : null;
 
   return {
     "@context": "https://schema.org",
@@ -117,6 +123,8 @@ export function jsonLdNegocio(n: DatosNegocioLd) {
       addressRegion: n.departamento,
       addressCountry: "HN",
     },
+    ...(punto && { geo: { "@type": "GeoCoordinates", latitude: punto.lat, longitude: punto.lng } }),
+    ...(mapa && { hasMap: mapa }),
     areaServed: { "@type": "City", name: n.ciudad },
     ...(horario && tieneAlgunTurno(horario) && {
       openingHoursSpecification: aOpeningHoursSpecification(horario),

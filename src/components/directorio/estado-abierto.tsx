@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const ZONA_HORARIA = "America/Tegucigalpa";
 
-function ahoraEnHonduras() {
+export function ahoraEnHonduras() {
   const partes = new Intl.DateTimeFormat("en-US", {
     timeZone: ZONA_HORARIA,
     weekday: "short",

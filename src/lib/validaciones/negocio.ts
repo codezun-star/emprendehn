@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { DIAS, type ClaveDia } from "@/lib/horario";
+import { dentroDeHonduras, esEnlaceGoogleMaps, redondear } from "@/lib/mapas";
 import { extraerDigitosHN } from "@/lib/telefono";
 
 import { opcional } from "./comun";
@@ -43,6 +44,20 @@ function redSocial(base: string) {
     return resultado.data;
   });
 }
+
+/** Coordenada del pin ("" = sin ubicación exacta). */
+const coordenada = z
+  .string()
+  .trim()
+  .transform((v, ctx) => {
+    if (v === "") return null;
+    const n = Number(v);
+    if (!Number.isFinite(n)) {
+      ctx.addIssue({ code: "custom", message: "Coordenada inválida" });
+      return z.NEVER;
+    }
+    return redondear(n);
+  });
 
 const hora = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora inválida");
 
@@ -89,8 +104,18 @@ export const negocioSchema = z
       sitio_web: opcional(url),
     }),
     horario,
+    latitud: coordenada,
+    longitud: coordenada,
+    enlace_mapa: opcional(
+      z.string().refine(esEnlaceGoogleMaps, "Pega un enlace de Google Maps (https://maps.app.goo.gl/… o https://www.google.com/maps/…)"),
+    ),
   })
   .superRefine((d, ctx) => {
+    if ((d.latitud === null) !== (d.longitud === null)) {
+      ctx.addIssue({ code: "custom", path: ["latitud"], message: "Coloca el pin en el mapa" });
+    } else if (d.latitud !== null && d.longitud !== null && !dentroDeHonduras({ lat: d.latitud, lng: d.longitud })) {
+      ctx.addIssue({ code: "custom", path: ["latitud"], message: "El pin debe estar dentro de Honduras" });
+    }
     if (!d.telefono && !d.whatsapp) {
       ctx.addIssue({
         code: "custom",

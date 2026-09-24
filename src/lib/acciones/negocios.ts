@@ -28,6 +28,9 @@ function aFila(d: NegocioOutput) {
     email_contacto: d.email_contacto,
     redes_sociales: limpiarRedes(d.redes_sociales),
     horario: d.horario,
+    latitud: d.latitud,
+    longitud: d.longitud,
+    enlace_mapa: d.enlace_mapa,
   };
 }
 

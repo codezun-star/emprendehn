@@ -80,6 +80,12 @@ export default function PaginaPrivacidad() {
         <li><strong>Supabase:</strong> base de datos, cuentas de usuario y almacenamiento de fotos.</li>
         <li><strong>Vercel:</strong> alojamiento del sitio web.</li>
         <li><strong>Resend:</strong> envío de los correos del servicio.</li>
+        <li>
+          <strong>OpenStreetMap:</strong> los mapas de la página de cada negocio y el buscador de lugares
+          al colocar el pin. Tu navegador los descarga directamente de sus servidores, que reciben tu
+          dirección IP. Tu ubicación actual solo se usa si tocas «Usar mi ubicación actual» y no la
+          guardamos: únicamente se guarda el pin que confirmas para tu negocio.
+        </li>
         {process.env.NEXT_PUBLIC_LOGIN_GOOGLE === "true" && (
           <li>
             <strong>Google:</strong> inicio de sesión con tu cuenta de Google, solo si eliges esa opción.
@@ -94,7 +100,7 @@ export default function PaginaPrivacidad() {
       </ul>
       <p>
         Estos proveedores pueden guardar la información en servidores fuera de Honduras (por ejemplo,
-        en Estados Unidos). Los enlaces a Google Maps y WhatsApp de cada negocio abren esos servicios, que
+        en Estados Unidos). Los enlaces a Google Maps, Waze y WhatsApp de cada negocio abren esos servicios, que
         tienen sus propias políticas de privacidad. También podríamos entregar datos si una autoridad
         competente lo exige conforme a la ley.
       </p>

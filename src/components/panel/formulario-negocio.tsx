@@ -13,6 +13,7 @@ import { actualizarNegocio, crearNegocio } from "@/lib/acciones/negocios";
 import { negocioSchema, type NegocioInput, type NegocioOutput } from "@/lib/validaciones/negocio";
 
 import { EditorHorario } from "./editor-horario";
+import { SelectorUbicacion } from "./selector-ubicacion";
 
 type OpcionCategoria = { id: string; nombre: string; hijas: { id: string; nombre: string }[] };
 type OpcionMunicipio = { id: number; nombre: string; departamento_id: number };
@@ -29,6 +30,9 @@ export const VALORES_VACIOS: NegocioInput = {
   email_contacto: "",
   redes_sociales: { facebook: "", instagram: "", tiktok: "", sitio_web: "" },
   horario: null,
+  latitud: "",
+  longitud: "",
+  enlace_mapa: "",
 };
 
 export function FormularioNegocio({
@@ -69,6 +73,12 @@ export function FormularioNegocio({
     [municipios, departamento],
   );
   const descripcion = useWatch({ control, name: "descripcion" }) ?? "";
+  const municipioId = useWatch({ control, name: "municipio_id" });
+  const ciudad = useMemo(() => {
+    const m = municipios.find((x) => String(x.id) === municipioId);
+    const d = m && departamentos.find((x) => x.id === m.departamento_id);
+    return m ? [m.nombre, d?.nombre].filter(Boolean).join(", ") : null;
+  }, [municipios, departamentos, municipioId]);
 
   const onSubmit = form.handleSubmit(async () => {
     setMensaje(null);
@@ -206,6 +216,7 @@ export function FormularioNegocio({
               {...register("direccion")}
             />
           </Campo>
+          <SelectorUbicacion ciudad={ciudad} />
         </Seccion>
 
         <Seccion titulo="Contacto" descripcion="Agrega al menos un teléfono o WhatsApp.">

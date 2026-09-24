@@ -2,21 +2,19 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 
-import { PerfilNegocio } from "@/components/directorio/perfil-negocio";
 import { RastreoNegocio } from "@/components/directorio/rastreo-negocio";
 import { ReportarNegocio } from "@/components/directorio/reportar-negocio";
-import { RejillaNegocios } from "@/components/directorio/tarjeta-negocio";
+import { PaginaNegocio } from "@/components/negocio/pagina-negocio";
 import { SeccionResenas } from "@/components/resenas/seccion-resenas";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
-  buscarNegocios,
   obtenerCategorias,
   obtenerMunicipios,
   obtenerNegocioPublico,
   obtenerResenasPublicas,
   obtenerSlugActual,
 } from "@/lib/consultas/directorio";
-import { jsonLdNegocio } from "@/lib/seo";
+import { jsonLdMigas, jsonLdNegocio, type Miga } from "@/lib/seo";
 import { urlImagen } from "@/lib/storage";
 import { resumir } from "@/lib/utils";
 
@@ -72,17 +70,19 @@ export async function generateMetadata({ params }: PageProps<"/negocio/[slug]">)
   };
 }
 
-export default async function PaginaNegocio({ params }: PageProps<"/negocio/[slug]">) {
+export default async function PaginaPublicaNegocio({ params }: PageProps<"/negocio/[slug]">) {
   const { slug } = await params;
   const { negocio, categoria, categoriaPadre, ciudad } = await cargarNegocio(slug);
   const resenas = await obtenerResenasPublicas(negocio.id);
 
-  const { negocios: cercanos } = await buscarNegocios({
-    categoria: categoria?.slug,
-    ciudad: ciudad?.slug,
-    limite: 4,
-  });
-  const relacionados = cercanos.filter((n) => n.id !== negocio.id).slice(0, 3);
+  // Sin migas visibles (la página se ve como sitio propio), pero Google las sigue recibiendo.
+  const migas: Miga[] = [
+    { nombre: "Inicio", ruta: "/" },
+    ...(categoriaPadre ? [{ nombre: categoriaPadre.nombre, ruta: `/categoria/${categoriaPadre.slug}` }] : []),
+    ...(categoria ? [{ nombre: categoria.nombre, ruta: `/categoria/${categoria.slug}` }] : []),
+    ...(categoria && ciudad ? [{ nombre: ciudad.nombre, ruta: `/categoria/${categoria.slug}/${ciudad.slug}` }] : []),
+    { nombre: negocio.nombre, ruta: `/negocio/${negocio.slug}` },
+  ];
 
   return (
     <>
@@ -96,14 +96,13 @@ export default async function PaginaNegocio({ params }: PageProps<"/negocio/[slu
           resenas: resenas.slice(0, 5),
         })}
       />
+      <JsonLd datos={jsonLdMigas(migas)} />
       <RastreoNegocio negocioId={negocio.id} />
-      <PerfilNegocio
+      <PaginaNegocio
         negocio={negocio}
         categoria={categoria}
-        categoriaPadre={categoriaPadre}
         ciudad={ciudad}
-        barraContactoMovil
-        debajoDeContacto={<ReportarNegocio negocioId={negocio.id} nombre={negocio.nombre} />}
+        alPie={<ReportarNegocio negocioId={negocio.id} nombre={negocio.nombre} />}
         seccionResenas={
           <SeccionResenas
             negocioId={negocio.id}
@@ -114,14 +113,6 @@ export default async function PaginaNegocio({ params }: PageProps<"/negocio/[slu
           />
         }
       />
-      {relacionados.length > 0 && categoria && ciudad && (
-        <section className="mx-auto max-w-6xl px-4 pb-8">
-          <h2 className="mb-4 text-xl font-bold text-brand-dark">
-            Más {categoria.nombre.toLowerCase()} en {ciudad.nombre}
-          </h2>
-          <RejillaNegocios negocios={relacionados} />
-        </section>
-      )}
     </>
   );
 }

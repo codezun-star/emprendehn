@@ -220,11 +220,14 @@ export type Database = {
           descripcion: string
           direccion: string | null
           email_contacto: string | null
+          enlace_mapa: string | null
           estado: Database["public"]["Enums"]["business_status"]
           horario: Json | null
           id: string
+          latitud: number | null
           localidad: string | null
           logo_path: string | null
+          longitud: number | null
           motivo_estado: string | null
           municipio_id: number
           nombre: string
@@ -248,11 +251,14 @@ export type Database = {
           descripcion: string
           direccion?: string | null
           email_contacto?: string | null
+          enlace_mapa?: string | null
           estado?: Database["public"]["Enums"]["business_status"]
           horario?: Json | null
           id?: string
+          latitud?: number | null
           localidad?: string | null
           logo_path?: string | null
+          longitud?: number | null
           motivo_estado?: string | null
           municipio_id: number
           nombre: string
@@ -276,11 +282,14 @@ export type Database = {
           descripcion?: string
           direccion?: string | null
           email_contacto?: string | null
+          enlace_mapa?: string | null
           estado?: Database["public"]["Enums"]["business_status"]
           horario?: Json | null
           id?: string
+          latitud?: number | null
           localidad?: string | null
           logo_path?: string | null
+          longitud?: number | null
           motivo_estado?: string | null
           municipio_id?: number
           nombre?: string

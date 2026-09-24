@@ -34,7 +34,7 @@ function errorDeConsulta(contexto: string, error: { message: string; code?: stri
   return new Error(
     `${contexto}: ${error.message}` +
       (faltaEsquema
-        ? " — ¿Ya aplicaste las migraciones de supabase/migrations (001–015) en este proyecto de Supabase?"
+        ? " — ¿Ya aplicaste las migraciones de supabase/migrations (001–016) en este proyecto de Supabase?"
         : ""),
   );
 }
@@ -92,6 +92,7 @@ const COLUMNAS_NEGOCIO = `
   id, nombre, slug, descripcion, category_id, municipio_id, localidad, direccion,
   telefono, whatsapp, email_contacto, redes_sociales, horario, logo_path, plan,
   estado, aprobado_en, updated_at, calificacion_promedio, total_resenas,
+  latitud, longitud, enlace_mapa,
   imagenes:business_images(id, storage_path, alt_text, orden, ancho, alto)
 ` as const;
 

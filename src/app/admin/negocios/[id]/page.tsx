@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PanelModeracion } from "@/components/admin/panel-moderacion";
-import { PerfilNegocio } from "@/components/directorio/perfil-negocio";
+import { PaginaNegocio } from "@/components/negocio/pagina-negocio";
 import { Alerta } from "@/components/ui/alerta";
 import { InsigniaEstado } from "@/components/ui/insignia-estado";
 import { requerirAdmin } from "@/lib/auth";
@@ -40,10 +40,10 @@ export default async function PaginaRevisarNegocio({ params }: PageProps<"/admin
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="order-2 min-w-0 overflow-hidden rounded-2xl bg-brand-light ring-1 ring-brand-dark/10 lg:order-1">
-          <PerfilNegocio
+          <PaginaNegocio
+            modo="vista-previa"
             negocio={negocio}
             categoria={categoria}
-            categoriaPadre={categoria?.parent_id ? categorias.get(categoria.parent_id) : undefined}
             ciudad={municipios.get(negocio.municipio_id)}
           />
         </div>

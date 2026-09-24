@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { PerfilNegocio } from "@/components/directorio/perfil-negocio";
+import { PaginaNegocio } from "@/components/negocio/pagina-negocio";
 import { Alerta } from "@/components/ui/alerta";
 import { requerirUsuario } from "@/lib/auth";
 import { obtenerCategorias, obtenerMunicipios } from "@/lib/consultas/directorio";
@@ -26,10 +26,10 @@ export default async function PaginaVistaPrevia({ params }: PageProps<"/panel/ne
           : "Así se verá tu página cuando sea aprobada. Todavía no es visible para el público."}
       </Alerta>
       <div className="-mx-4 overflow-hidden rounded-2xl bg-brand-light ring-1 ring-brand-dark/10 sm:mx-0">
-        <PerfilNegocio
+        <PaginaNegocio
+          modo="vista-previa"
           negocio={negocio}
           categoria={categoria}
-          categoriaPadre={categoria?.parent_id ? categorias.get(categoria.parent_id) : undefined}
           ciudad={municipios.get(negocio.municipio_id)}
         />
       </div>

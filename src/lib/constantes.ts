@@ -25,6 +25,7 @@ export const ETIQUETAS_CAMBIOS: Record<string, string> = {
   logo: "Logo",
   redes: "Redes sociales",
   fotos: "Fotos nuevas",
+  ubicacion: "Ubicación en el mapa",
 };
 
 export function describirCambios(cambios: string[]): string {

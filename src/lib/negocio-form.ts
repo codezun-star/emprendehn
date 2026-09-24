@@ -30,5 +30,8 @@ export function valoresDesdeNegocio(n: Tables<"businesses">): NegocioInput {
       sitio_web: texto(n.redes_sociales, "sitio_web"),
     },
     horario: parsearHorario(n.horario),
+    latitud: n.latitud === null ? "" : String(n.latitud),
+    longitud: n.longitud === null ? "" : String(n.longitud),
+    enlace_mapa: n.enlace_mapa ?? "",
   };
 }
