@@ -57,6 +57,7 @@ ejecutar sin romper nada.
 | 007 | `business_images` | Galería, límite de fotos por plan (trigger), RLS |
 | 008 | `storage` | Bucket público `business-images` (5 MB, JPEG/PNG/WebP) y políticas de Storage |
 | 009 | `funciones_directorio` | RPC `buscar_negocios` y `resumen_directorio` |
+| 010 | `revision_de_cambios` | Revisión posterior de cambios en negocios publicados; los suspendidos vuelven a revisión al corregirse |
 
 ### 3. Configuración de Supabase Auth (dashboard)
 
@@ -171,7 +172,7 @@ supabase/templates/       plantillas de correo de Auth
 El build **prerenderiza con datos reales** el inicio, `/categorias` y el sitemap. Por eso
 el orden importa:
 
-1. **Aplica las migraciones 001–009** en tu proyecto de Supabase. Si faltan, el build
+1. **Aplica las migraciones 001–010** en tu proyecto de Supabase. Si faltan, el build
    falla con el aviso "¿Ya aplicaste las migraciones…?".
 2. **Variables de entorno** en *Vercel → Project → Settings → Environment Variables*,
    marcando **Production** y **Preview**:
@@ -210,6 +211,5 @@ CLI + Docker en el entorno de desarrollo), nunca contra el proyecto real:
 
 Pagos y suscripciones (`subscriptions`), destacados pagados por categoría/ciudad
 (`featured_placements`), dominio personalizado por negocio (`business_domains`), reseñas,
-catálogo de productos, más notificaciones por correo (rechazo, suspensión; ver
-`src/lib/correos/`) y blog. El
+catálogo de productos y blog. El
 esquema ya los contempla: ver `docs/arquitectura.md` §3.6.

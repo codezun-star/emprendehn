@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { PestanasNegocio } from "@/components/panel/pestanas-negocio";
+import { Alerta } from "@/components/ui/alerta";
 import { InsigniaEstado } from "@/components/ui/insignia-estado";
 import { requerirUsuario } from "@/lib/auth";
 import { obtenerMiNegocio } from "@/lib/consultas/panel";
@@ -20,6 +21,22 @@ export default async function LayoutNegocio({ children, params }: LayoutProps<"/
         </div>
       </div>
       <PestanasNegocio negocioId={negocio.id} />
+      {(negocio.estado === "rechazado" || negocio.estado === "suspendido") && (
+        <Alerta tono="error" titulo="Mensaje del equipo de EmprendeHN">
+          {negocio.motivo_estado && <p>{negocio.motivo_estado}</p>}
+          <p className={negocio.motivo_estado ? "mt-2" : undefined}>
+            Corrige lo indicado y guarda los cambios (o agrega las fotos que falten): tu negocio volverá a
+            revisión automáticamente.
+          </p>
+        </Alerta>
+      )}
+      {negocio.estado === "aprobado" && (
+        <Alerta tono="info">
+          Tu negocio está publicado: lo que guardes se verá al instante. Si cambias el nombre, la
+          descripción, la categoría, la ciudad, el logo o las redes, o agregas fotos, el equipo de
+          EmprendeHN lo revisará después.
+        </Alerta>
+      )}
       {children}
     </div>
   );

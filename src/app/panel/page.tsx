@@ -91,16 +91,16 @@ export default async function PaginaPanel({ searchParams }: PageProps<"/panel">)
                 <div className="mt-4">
                   {n.estado === "pendiente" && (
                     <Alerta tono="aviso">
-                      Tu negocio está en revisión. Te avisaremos cuando esté publicado. Mientras
-                      tanto puedes editarlo y agregar fotos.
+                      Tu negocio está en revisión. Te avisaremos por correo cuando esté publicado.
+                      Mientras tanto puedes editarlo y agregar fotos.
                     </Alerta>
                   )}
                   {(n.estado === "rechazado" || n.estado === "suspendido") && (
                     <Alerta tono="error" titulo={n.estado === "rechazado" ? "Necesita cambios" : "Negocio suspendido"}>
-                      {n.motivo_estado ?? "Contáctanos para más información."}
-                      {n.estado === "rechazado" && (
-                        <p className="mt-1">Corrige los datos y guarda: volverá a revisión automáticamente.</p>
-                      )}
+                      {n.motivo_estado && <p>{n.motivo_estado}</p>}
+                      <p className={n.motivo_estado ? "mt-1" : undefined}>
+                        Corrige los datos y guarda (o agrega fotos): volverá a revisión automáticamente.
+                      </p>
                     </Alerta>
                   )}
                   {n.estado === "aprobado" && (

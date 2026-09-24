@@ -6,6 +6,7 @@ import { PerfilNegocio } from "@/components/directorio/perfil-negocio";
 import { Alerta } from "@/components/ui/alerta";
 import { InsigniaEstado } from "@/components/ui/insignia-estado";
 import { requerirAdmin } from "@/lib/auth";
+import { describirCambios } from "@/lib/constantes";
 import { listarPlanes, obtenerNegocioAdmin } from "@/lib/consultas/admin";
 import { obtenerCategorias, obtenerMunicipios } from "@/lib/consultas/directorio";
 import { formatearFecha } from "@/lib/utils";
@@ -22,11 +23,12 @@ export default async function PaginaRevisarNegocio({ params }: PageProps<"/admin
     obtenerMunicipios(),
   ]);
   const categoria = categorias.get(negocio.category_id);
+  const hayCambios = negocio.estado === "aprobado" && negocio.cambios_por_revisar.length > 0;
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href={`/admin?estado=${negocio.estado}`} className="text-sm">← Volver al listado</Link>
+        <Link href={`/admin?estado=${hayCambios ? "cambios" : negocio.estado}`} className="text-sm">← Volver al listado</Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold text-brand-dark">{negocio.nombre}</h1>
           <InsigniaEstado estado={negocio.estado} />
@@ -54,6 +56,14 @@ export default async function PaginaRevisarNegocio({ params }: PageProps<"/admin
             motivoActual={negocio.motivo_estado}
             planActual={negocio.plan}
             planes={planes}
+            cambiosPorRevisar={
+              hayCambios
+                ? {
+                    campos: describirCambios(negocio.cambios_por_revisar),
+                    desde: formatearFecha(negocio.cambios_por_revisar_desde ?? negocio.updated_at),
+                  }
+                : null
+            }
           />
           <div className="space-y-2 rounded-2xl bg-white p-5 text-sm shadow-sm ring-1 ring-brand-dark/10">
             <h2 className="text-lg font-bold text-brand-dark">Dueño</h2>

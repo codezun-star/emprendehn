@@ -25,6 +25,60 @@ export function boton(texto: string, url: string, variante: "principal" | "secun
 </table>`;
 }
 
+/** Franja superior de color con ícono circular, título y subtítulo (una fila <tr>). */
+export function filaEncabezado({
+  icono,
+  titulo,
+  subtitulo,
+  fondoIcono = COLORES.accent,
+}: {
+  icono: string;
+  titulo: string;
+  subtitulo: string;
+  fondoIcono?: string;
+}): string {
+  return `<tr>
+    <td align="center" style="background:${COLORES.brandDark};padding:40px 32px 36px;font-family:${FUENTE};">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 20px;">
+        <tr>
+          <td align="center" valign="middle" width="64" height="64" style="width:64px;height:64px;border-radius:32px;background:${fondoIcono};font-size:34px;font-weight:700;line-height:64px;color:${COLORES.ink};">${icono}</td>
+        </tr>
+      </table>
+      <h1 style="margin:0 0 10px;font-size:26px;font-weight:800;line-height:1.25;color:#ffffff;">${titulo}</h1>
+      <p style="margin:0;font-size:16px;line-height:1.5;color:#cfe0ec;">${subtitulo}</p>
+    </td>
+  </tr>`;
+}
+
+/** "¡Hola, Marta!" con el primer nombre del dueño (texto plano, sin escapar). */
+export function saludo(nombreCompleto: string | null): string {
+  const primerNombre = nombreCompleto?.trim().split(/\s+/)[0];
+  return primerNombre ? `¡Hola, ${primerNombre}!` : "¡Hola!";
+}
+
+export function parrafoSaludo(texto: string): string {
+  return `<p style="margin:0 0 12px;font-size:17px;font-weight:700;color:${COLORES.brandDark};">${escaparHtml(texto)}</p>`;
+}
+
+/** Párrafo de cuerpo. `html` ya escapado. */
+export function parrafo(html: string, margenInferior = 24): string {
+  return `<p style="margin:0 0 ${margenInferior}px;font-size:16px;line-height:1.6;color:${COLORES.ink};">${html}</p>`;
+}
+
+/** Recuadro destacado con borde de color. `html` ya escapado. */
+export function recuadro(html: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${COLORES.brandLight};border-left:4px solid ${COLORES.accent};border-radius:12px;">
+        <tr>
+          <td style="padding:18px 20px;font-family:${FUENTE};">${html}</td>
+        </tr>
+      </table>`;
+}
+
+/** Texto de un usuario (p. ej. el motivo del admin) listo para HTML, con saltos de línea. */
+export function textoMultilinea(texto: string): string {
+  return escaparHtml(texto.trim()).replace(/\r?\n/g, "<br>");
+}
+
 /**
  * Documento completo: logo, tarjeta blanca con `contenido` y pie. `resumen` es el
  * texto que los clientes de correo muestran junto al asunto en la bandeja.

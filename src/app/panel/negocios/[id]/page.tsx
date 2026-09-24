@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { ZonaPeligro } from "@/components/panel/zona-peligro";
 import { FormularioNegocio } from "@/components/panel/formulario-negocio";
-import { Alerta } from "@/components/ui/alerta";
 import { requerirUsuario } from "@/lib/auth";
 import { obtenerOpcionesFormulario } from "@/lib/consultas/formulario";
 import { obtenerMiNegocio } from "@/lib/consultas/panel";
@@ -20,11 +19,6 @@ export default async function PaginaEditarNegocio({ params }: PageProps<"/panel/
 
   return (
     <div className="space-y-6">
-      {(negocio.estado === "rechazado" || negocio.estado === "suspendido") && negocio.motivo_estado && (
-        <Alerta tono="error" titulo="Mensaje del equipo de EmprendeHN">
-          {negocio.motivo_estado}
-        </Alerta>
-      )}
       <FormularioNegocio
         negocioId={negocio.id}
         categorias={opciones.categorias}

@@ -10,27 +10,38 @@ import type { Enums } from "@/types/database.types";
 
 export const POR_PAGINA_ADMIN = 30;
 
+/** Pestañas del listado: los cuatro estados más la cola de cambios por revisar. */
+export type VistaAdmin = Enums<"business_status"> | "cambios";
+
 export async function contarNegociosPorEstado() {
   const supabase = await crearClienteServidor();
   const estados: Enums<"business_status">[] = ["pendiente", "aprobado", "rechazado", "suspendido"];
-  const conteos = await Promise.all(
-    estados.map(async (estado) => {
+  const conteos = await Promise.all([
+    ...estados.map(async (estado) => {
       const { count } = await supabase
         .from("businesses")
         .select("id", { count: "exact", head: true })
         .eq("estado", estado);
       return [estado, count ?? 0] as const;
     }),
-  );
-  return Object.fromEntries(conteos) as Record<Enums<"business_status">, number>;
+    (async () => {
+      const { count } = await supabase
+        .from("businesses")
+        .select("id", { count: "exact", head: true })
+        .eq("estado", "aprobado")
+        .not("cambios_por_revisar_desde", "is", null);
+      return ["cambios", count ?? 0] as const;
+    })(),
+  ]);
+  return Object.fromEntries(conteos) as Record<VistaAdmin, number>;
 }
 
 export async function listarNegociosAdmin({
-  estado,
+  vista,
   q,
   pagina,
 }: {
-  estado: Enums<"business_status">;
+  vista: VistaAdmin;
   q?: string;
   pagina: number;
 }) {
@@ -38,13 +49,16 @@ export async function listarNegociosAdmin({
   let consulta = supabase
     .from("businesses")
     .select(
-      "id, nombre, slug, estado, plan, created_at, updated_at, category_id, municipio_id, dueno:profiles(email, nombre_completo)",
+      "id, nombre, slug, estado, plan, created_at, updated_at, category_id, municipio_id, cambios_por_revisar, cambios_por_revisar_desde, dueno:profiles(email, nombre_completo)",
       { count: "exact" },
     )
-    .eq("estado", estado)
-    // Pendientes: el más antiguo primero (cola de revisión). Resto: más recientes.
-    .order(estado === "pendiente" ? "created_at" : "updated_at", { ascending: estado === "pendiente" })
-    .range((pagina - 1) * POR_PAGINA_ADMIN, pagina * POR_PAGINA_ADMIN - 1);
+    .eq("estado", vista === "cambios" ? "aprobado" : vista);
+  // Colas (pendientes y cambios): el más antiguo primero. Resto: más recientes.
+  consulta =
+    vista === "cambios"
+      ? consulta.not("cambios_por_revisar_desde", "is", null).order("cambios_por_revisar_desde", { ascending: true })
+      : consulta.order(vista === "pendiente" ? "created_at" : "updated_at", { ascending: vista === "pendiente" });
+  consulta = consulta.range((pagina - 1) * POR_PAGINA_ADMIN, pagina * POR_PAGINA_ADMIN - 1);
 
   if (q) consulta = consulta.ilike("nombre", `%${q.replace(/[%_\\]/g, "\\$&")}%`);
 

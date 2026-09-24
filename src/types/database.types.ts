@@ -59,6 +59,8 @@ export type Database = {
       businesses: {
         Row: {
           aprobado_en: string | null
+          cambios_por_revisar: string[]
+          cambios_por_revisar_desde: string | null
           category_id: string
           created_at: string
           descripcion: string
@@ -83,6 +85,8 @@ export type Database = {
         }
         Insert: {
           aprobado_en?: string | null
+          cambios_por_revisar?: string[]
+          cambios_por_revisar_desde?: string | null
           category_id: string
           created_at?: string
           descripcion: string
@@ -107,6 +111,8 @@ export type Database = {
         }
         Update: {
           aprobado_en?: string | null
+          cambios_por_revisar?: string[]
+          cambios_por_revisar_desde?: string | null
           category_id?: string
           created_at?: string
           descripcion?: string

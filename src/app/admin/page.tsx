@@ -5,10 +5,10 @@ import { Alerta } from "@/components/ui/alerta";
 import { BotonEnlace } from "@/components/ui/boton";
 import { ETIQUETAS_ESTADO, InsigniaEstado, InsigniaPlan } from "@/components/ui/insignia-estado";
 import { requerirAdmin } from "@/lib/auth";
-import { contarNegociosPorEstado, listarNegociosAdmin, POR_PAGINA_ADMIN } from "@/lib/consultas/admin";
+import { describirCambios } from "@/lib/constantes";
+import { contarNegociosPorEstado, listarNegociosAdmin, POR_PAGINA_ADMIN, type VistaAdmin } from "@/lib/consultas/admin";
 import { obtenerCategorias, obtenerMunicipios } from "@/lib/consultas/directorio";
 import { cn, formatearFecha } from "@/lib/utils";
-import { ESTADOS } from "@/lib/validaciones/admin";
 
 export const metadata: Metadata = { title: "Negocios" };
 
@@ -16,16 +16,20 @@ function texto(valor: string | string[] | undefined) {
   return (Array.isArray(valor) ? valor[0] : valor)?.trim() ?? "";
 }
 
+// "Cambios por revisar" va junto a "En revisión": son las dos colas de trabajo.
+const VISTAS: VistaAdmin[] = ["pendiente", "cambios", "aprobado", "rechazado", "suspendido"];
+const ETIQUETAS_VISTA: Record<VistaAdmin, string> = { ...ETIQUETAS_ESTADO, cambios: "Cambios por revisar" };
+
 export default async function PaginaAdmin({ searchParams }: PageProps<"/admin">) {
   await requerirAdmin();
   const sp = await searchParams;
-  const estado = ESTADOS.find((e) => e === texto(sp.estado)) ?? "pendiente";
+  const estado = VISTAS.find((e) => e === texto(sp.estado)) ?? "pendiente";
   const q = texto(sp.q).slice(0, 100);
   const pagina = Math.max(1, Number.parseInt(texto(sp.pagina), 10) || 1);
 
   const [conteos, { negocios, total }, { porId: categorias }, { porId: municipios }] = await Promise.all([
     contarNegociosPorEstado(),
-    listarNegociosAdmin({ estado, q, pagina }),
+    listarNegociosAdmin({ vista: estado, q, pagina }),
     obtenerCategorias(),
     obtenerMunicipios(),
   ]);
@@ -55,7 +59,7 @@ export default async function PaginaAdmin({ searchParams }: PageProps<"/admin">)
       </div>
 
       <nav aria-label="Filtrar por estado" className="flex flex-wrap gap-2">
-        {ESTADOS.map((e) => (
+        {VISTAS.map((e) => (
           <Link
             key={e}
             href={`/admin?estado=${e}`}
@@ -67,14 +71,24 @@ export default async function PaginaAdmin({ searchParams }: PageProps<"/admin">)
                 : "bg-white text-brand-dark ring-brand-dark/15 hover:ring-brand",
             )}
           >
-            {ETIQUETAS_ESTADO[e]} <span className="opacity-70">({conteos[e]})</span>
+            {ETIQUETAS_VISTA[e]} <span className="opacity-70">({conteos[e]})</span>
           </Link>
         ))}
       </nav>
 
+      {estado === "cambios" && (
+        <p className="text-sm text-ink/70">
+          Negocios publicados cuyo dueño cambió nombre, descripción, categoría, ciudad, logo, redes o
+          agregó fotos. Los cambios ya están visibles: revísalos y márcalos como revisados, o suspende
+          el negocio con un motivo si algo no cumple las reglas.
+        </p>
+      )}
+
       {negocios.length === 0 ? (
         <p className="rounded-2xl bg-white p-8 text-center text-ink/60 ring-1 ring-brand-dark/10">
-          No hay negocios en este estado{q && " que coincidan con la búsqueda"}.
+          {estado === "cambios"
+            ? `No hay cambios por revisar${q ? " que coincidan con la búsqueda" : ""}.`
+            : `No hay negocios en este estado${q ? " que coincidan con la búsqueda" : ""}.`}
         </p>
       ) : (
         <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-brand-dark/10">
@@ -84,7 +98,7 @@ export default async function PaginaAdmin({ searchParams }: PageProps<"/admin">)
                 <th className="px-4 py-3">Negocio</th>
                 <th className="px-4 py-3">Categoría · Ciudad</th>
                 <th className="px-4 py-3">Dueño</th>
-                <th className="px-4 py-3">{estado === "pendiente" ? "Enviado" : "Actualizado"}</th>
+                <th className="px-4 py-3">{estado === "pendiente" ? "Enviado" : estado === "cambios" ? "Cambió" : "Actualizado"}</th>
                 <th className="px-4 py-3"><span className="sr-only">Acciones</span></th>
               </tr>
             </thead>
@@ -96,6 +110,11 @@ export default async function PaginaAdmin({ searchParams }: PageProps<"/admin">)
                       {n.nombre} <InsigniaEstado estado={n.estado} /> <InsigniaPlan plan={n.plan} />
                     </div>
                     <div className="text-xs text-ink/50">/negocio/{n.slug}</div>
+                    {n.cambios_por_revisar.length > 0 && (
+                      <div className="mt-1 text-xs font-semibold text-amber-900">
+                        Cambió: {describirCambios(n.cambios_por_revisar)}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-ink/70">
                     {categorias.get(n.category_id)?.nombre ?? "—"} · {municipios.get(n.municipio_id)?.nombre ?? "—"}
@@ -105,7 +124,13 @@ export default async function PaginaAdmin({ searchParams }: PageProps<"/admin">)
                     <div className="text-xs text-ink/50">{n.dueno?.email}</div>
                   </td>
                   <td className="px-4 py-3 text-ink/70">
-                    {formatearFecha(estado === "pendiente" ? n.created_at : n.updated_at)}
+                    {formatearFecha(
+                      estado === "pendiente"
+                        ? n.created_at
+                        : estado === "cambios"
+                          ? (n.cambios_por_revisar_desde ?? n.updated_at)
+                          : n.updated_at,
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <BotonEnlace href={`/admin/negocios/${n.id}`} tamano="sm" variante="secundario">

@@ -105,7 +105,7 @@ src/
     acciones/                     # server actions: negocio.ts, galeria.ts, admin.ts, auth.ts
     seo/                          # jsonld.ts, metadata.ts
     utils/                        # whatsapp.ts, telefono.ts, horario.ts
-    correos/                      # correos propios vía API de Resend (enviar.ts, plantilla.ts, negocio-aprobado.ts)
+    correos/                      # correos propios vía API de Resend (enviar.ts, plantilla.ts, moderacion.ts)
   types/
     database.types.ts             # tipos del esquema (escritos a mano, regenerables con supabase gen types)
   proxy.ts                        # Next 16 renombró middleware.ts → proxy.ts
@@ -211,9 +211,9 @@ penaliza Google.
   **SMTP personalizado en el dashboard de Supabase**, sin código. Esto es importante para
   producción, porque el SMTP por defecto de Supabase tiene un límite de envío muy bajo.
   Los correos propios de la aplicación van por la API de Resend (`lib/correos/`, con
-  `RESEND_API_KEY`). Por ahora solo hay uno: el aviso "tu negocio fue aprobado", que
-  `moderarNegocio` envía cuando un negocio pasa a `aprobado`. Si el envío falla, la
-  aprobación no se deshace; el panel de admin muestra el resultado.
+  `RESEND_API_KEY`). `moderarNegocio` avisa al dueño cuando su negocio pasa a `aprobado`,
+  `rechazado` o `suspendido` (`lib/correos/moderacion.ts`). Si el envío falla, el cambio
+  de estado no se deshace; el panel de admin muestra el resultado.
 - Tendrás que ajustar las plantillas de email en el dashboard. Te daré el texto exacto
   cuando lleguemos a ese paso.
 
@@ -328,6 +328,8 @@ Honduras, editables desde `/admin`.
 | plan | text FK → plans | default `gratis` (**solo admin**) |
 | motivo_estado | text null | razón del rechazo o suspensión, visible para el dueño (**solo admin**) |
 | aprobado_en | timestamptz null | (**solo admin**) |
+| cambios_por_revisar | text[] | campos sensibles que el dueño cambió estando publicado y el admin no ha revisado (**solo admin**, lo llena el trigger) |
+| cambios_por_revisar_desde | timestamptz null | primer cambio sin revisar; ordena la cola "Cambios por revisar" (**solo admin**) |
 | search_vector | tsvector | columna generada: nombre (peso A) + descripción (B) + localidad (C), en español y sin acentos |
 | created_at / updated_at | timestamptz | |
 
@@ -400,8 +402,13 @@ guardián en `businesses`:
 - `BEFORE INSERT`: si no es admin, fuerza `estado = 'pendiente'`, `plan = 'gratis'`,
   `owner_id = auth.uid()` y limpia los campos de admin.
 - `BEFORE UPDATE`: si no es admin y alguno de esos campos cambia, lanza una excepción.
-- Si el dueño edita un negocio **rechazado**, el trigger lo pasa a `pendiente` (reenvío
-  automático a revisión).
+- Si el dueño edita un negocio **rechazado** o **suspendido** (o le agrega una foto), el
+  trigger lo pasa a `pendiente` (reenvío automático a revisión). Desde la migración 010.
+- Si el dueño edita un negocio **aprobado**, el cambio se publica al instante. Si toca algo
+  sensible (nombre, descripción, categoría, ciudad, logo, redes o fotos nuevas), el trigger
+  lo anota en `cambios_por_revisar` y el negocio aparece en la cola "Cambios por revisar"
+  del admin (moderación posterior). Teléfono, WhatsApp, correo, horario y dirección no se
+  anotan. Cualquier cambio de estado del admin limpia la cola.
 
 **Storage:** el bucket `business-images` es **público para lectura** (CDN rápido e
 indexable por Google Imágenes) y tiene políticas en `storage.objects`: solo se puede
@@ -436,6 +443,7 @@ El esquema actual ya lo soporta sin romper nada:
 | `007_business_images.sql` | tabla, trigger de límite por plan, RLS | galería |
 | `008_storage.sql` | bucket `business-images` + políticas de `storage.objects` | galería |
 | `009_funciones_directorio.sql` | RPC `buscar_negocios` (búsqueda + filtros + orden) y `resumen_directorio` (conteos por categoría/ciudad) | directorio público, sitemap |
+| `010_revision_de_cambios.sql` | columnas `cambios_por_revisar*`, trigger guardián actualizado, trigger de fotos nuevas | moderación posterior, reenvío de suspendidos |
 
 ## 5. Orden de construcción
 
@@ -452,8 +460,14 @@ El esquema actual ya lo soporta sin romper nada:
 - **Tailwind v4** con tokens en `@theme` (mismos nombres de clase propuestos).
 - **Ciudad = municipio**: catálogo de 298 municipios (Distrito Central se muestra como
   "Tegucigalpa") + campo libre `localidad` para colonia, barrio o aldea.
-- **Edición de un negocio aprobado**: se publica al instante (no vuelve a revisión); un
-  negocio `rechazado` vuelve a `pendiente` cuando su dueño lo edita.
+- **Edición de un negocio aprobado**: se publica al instante (no vuelve a revisión, para
+  que un cambio de teléfono no lo saque del directorio). Los cambios sensibles quedan en
+  la cola "Cambios por revisar" del admin, que los marca como revisados o suspende el
+  negocio. Un negocio `rechazado` o `suspendido` vuelve a `pendiente` cuando su dueño lo
+  edita o le agrega fotos.
+- **Correos de moderación**: el dueño recibe un correo cuando su negocio se aprueba (o se
+  publica de nuevo), se rechaza o se suspende, con el motivo del admin. "Volver a
+  pendiente" no avisa porque es una corrección interna del admin.
 - **Máximo 3 negocios por cuenta** (constante en el trigger de `006` y en `lib/constantes.ts`).
 - **Llaves de Supabase**: se usa `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; acepta tanto la
   publishable key nueva como la anon key legacy.

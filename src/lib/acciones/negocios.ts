@@ -78,13 +78,14 @@ export async function actualizarNegocio(id: string, input: NegocioInput): Promis
 
   if (anterior.estado === "aprobado") await revalidarDirectorio(anterior, nuevo);
 
-  return {
-    ok: true,
-    mensaje:
-      anterior.estado === "rechazado" && nuevo.estado === "pendiente"
-        ? "Cambios guardados. Tu negocio volvió a revisión."
-        : "Cambios guardados.",
-  };
+  // Rechazado o suspendido: el trigger lo devuelve a revisión (migración 010).
+  const mensaje =
+    nuevo.estado === "pendiente" && anterior.estado !== "pendiente"
+      ? "Cambios guardados. Tu negocio volvió a revisión."
+      : nuevo.estado === "aprobado"
+        ? "Cambios guardados y publicados."
+        : "Cambios guardados.";
+  return { ok: true, mensaje };
 }
 
 export async function eliminarNegocio(id: string): Promise<ResultadoAccion> {

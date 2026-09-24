@@ -7,7 +7,7 @@ import { Alerta } from "@/components/ui/alerta";
 import { Boton } from "@/components/ui/boton";
 import { Campo, Select, Textarea } from "@/components/ui/campo";
 import type { EstadoNegocio } from "@/components/ui/insignia-estado";
-import { cambiarPlan, eliminarNegocioAdmin, moderarNegocio } from "@/lib/acciones/admin";
+import { cambiarPlan, eliminarNegocioAdmin, marcarCambiosRevisados, moderarNegocio } from "@/lib/acciones/admin";
 
 export function PanelModeracion({
   negocioId,
@@ -16,6 +16,7 @@ export function PanelModeracion({
   motivoActual,
   planActual,
   planes,
+  cambiosPorRevisar,
 }: {
   negocioId: string;
   nombre: string;
@@ -23,6 +24,8 @@ export function PanelModeracion({
   motivoActual: string | null;
   planActual: string;
   planes: { code: string; nombre: string; max_imagenes: number }[];
+  /** Cambios publicados que el admin aún no revisa (solo negocios aprobados). */
+  cambiosPorRevisar: { campos: string; desde: string } | null;
 }) {
   const router = useRouter();
   const [motivo, setMotivo] = useState(motivoActual ?? "");
@@ -53,6 +56,24 @@ export function PanelModeracion({
     <div className="space-y-5 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-brand-dark/10">
       <h2 className="text-lg font-bold text-brand-dark">Moderación</h2>
       {resultado && <Alerta tono={resultado.ok ? "exito" : "error"}>{resultado.texto}</Alerta>}
+
+      {cambiosPorRevisar && (
+        <Alerta tono="aviso" titulo="Cambios publicados sin revisar">
+          <p>
+            {cambiosPorRevisar.campos} (desde el {cambiosPorRevisar.desde}). Ya se ven en el directorio; si
+            algo no cumple las reglas, suspende el negocio con un motivo.
+          </p>
+          <Boton
+            variante="secundario"
+            tamano="sm"
+            className="mt-3"
+            disabled={pendiente}
+            onClick={() => ejecutar(() => marcarCambiosRevisados(negocioId))}
+          >
+            Marcar como revisados
+          </Boton>
+        </Alerta>
+      )}
 
       <Campo
         etiqueta="Motivo (obligatorio para rechazar o suspender)"

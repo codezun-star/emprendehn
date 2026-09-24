@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { obtenerSesion } from "@/lib/auth";
 import { enviarCorreo, type ResultadoEnvio } from "@/lib/correos/enviar";
-import { correoNegocioAprobado } from "@/lib/correos/negocio-aprobado";
+import { correoDeModeracion } from "@/lib/correos/moderacion";
 import { revalidarCategorias, revalidarDirectorio } from "@/lib/revalidacion";
 import { BUCKET_IMAGENES } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
@@ -48,11 +48,13 @@ export async function moderarNegocio(
   if (!parsed.success) return falloValidacion(parsed.error);
   const { estado, motivo } = parsed.data;
 
-  // Estado anterior (para avisar solo cuando se publica) y datos del correo. Si esta
+  // Estado anterior (para avisar solo si cambia) y datos del correo. Si esta
   // lectura falla, se modera igual y solo se omite el aviso.
   const { data: anterior, error: errorAnterior } = await supabase
     .from("businesses")
-    .select("estado, nombre, dueno:profiles(email, nombre_completo), categoria:categories(nombre), municipio:municipios(nombre)")
+    .select(
+      "estado, nombre, aprobado_en, dueno:profiles(email, nombre_completo), categoria:categories(nombre), municipio:municipios(nombre)",
+    )
     .eq("id", id)
     .maybeSingle();
   if (errorAnterior) console.error("[moderarNegocio] Sin datos para el aviso por correo:", errorAnterior.message);
@@ -72,28 +74,44 @@ export async function moderarNegocio(
   // Aprobar publica la página; rechazar/suspender la retira (404 en la próxima visita).
   await revalidarDirectorio(data);
 
-  if (estado === "aprobado" && anterior && anterior.estado !== "aprobado" && anterior.dueno?.email) {
-    const envio = await enviarCorreo(
-      anterior.dueno.email,
-      correoNegocioAprobado({
-        negocioId: id,
-        nombreNegocio: anterior.nombre,
-        slug: data.slug,
-        nombreDueno: anterior.dueno.nombre_completo,
-        categoria: anterior.categoria?.nombre ?? null,
-        ciudad: anterior.municipio?.nombre ?? null,
-      }),
-    );
-    return { ok: true, mensaje: `Negocio aprobado y publicado. ${AVISO_CORREO[envio](anterior.dueno.email)}` };
-  }
-
   const mensajes = {
     aprobado: "Negocio aprobado y publicado.",
     rechazado: "Negocio rechazado. El emprendedor verá el motivo en su panel.",
     suspendido: "Negocio suspendido y retirado del directorio.",
     pendiente: "Negocio devuelto a revisión.",
   } as const;
-  return { ok: true, mensaje: mensajes[estado] };
+
+  const correo =
+    anterior && anterior.estado !== estado
+      ? correoDeModeracion(estado, {
+          negocioId: id,
+          nombreNegocio: anterior.nombre,
+          slug: data.slug,
+          nombreDueno: anterior.dueno?.nombre_completo ?? null,
+          categoria: anterior.categoria?.nombre ?? null,
+          ciudad: anterior.municipio?.nombre ?? null,
+          motivo: estado === "rechazado" || estado === "suspendido" ? motivo : null,
+          publicadoAntes: anterior.aprobado_en !== null,
+        })
+      : null;
+  if (!correo || !anterior?.dueno?.email) return { ok: true, mensaje: mensajes[estado] };
+
+  const envio = await enviarCorreo(anterior.dueno.email, correo);
+  return { ok: true, mensaje: `${mensajes[estado]} ${AVISO_CORREO[envio](anterior.dueno.email)}` };
+}
+
+/** Admin: los cambios publicados de un negocio aprobado ya se revisaron. */
+export async function marcarCambiosRevisados(id: string): Promise<ResultadoAccion> {
+  const supabase = await clienteAdmin();
+  if (!supabase) return NO_AUTORIZADO;
+  if (!z.uuid().safeParse(id).success) return { ok: false, error: "Negocio no encontrado." };
+
+  const { error } = await supabase
+    .from("businesses")
+    .update({ cambios_por_revisar: [], cambios_por_revisar_desde: null })
+    .eq("id", id);
+  if (error) return errorDeBaseDeDatos(error);
+  return { ok: true, mensaje: "Cambios marcados como revisados." };
 }
 
 const AVISO_CORREO: Record<ResultadoEnvio, (email: string) => string> = {
