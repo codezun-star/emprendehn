@@ -1,0 +1,49 @@
+# Revisión automática en cada push y pull request:
+# · lint + tipos de la app
+# · migraciones de Supabase aplicadas sobre un Postgres limpio + pruebas SQL
+# No despliega nada: Vercel sigue desplegando por su cuenta.
+name: Revisión
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  app:
+    name: Lint y tipos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci
+      - run: npx next typegen
+      - run: npm run lint
+      - run: npm run typecheck
+
+  migraciones:
+    name: Migraciones y pruebas SQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v5
+      - run: scripts/probar-migraciones.sh

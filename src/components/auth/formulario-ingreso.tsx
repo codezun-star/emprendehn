@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { useAntispam } from "@/components/forms/antispam";
 import { aplicarErroresServidor } from "@/components/forms/errores";
 import { InputContrasena } from "@/components/forms/input-contrasena";
 import { Alerta } from "@/components/ui/alerta";
@@ -25,10 +26,11 @@ export function FormularioIngreso({ siguiente }: { siguiente?: string }) {
 
   const [correoSinConfirmar, setCorreoSinConfirmar] = useState<string | null>(null);
   const [reenvio, setReenvio] = useState<string | null>(null);
+  const antispam = useAntispam();
 
   const onSubmit = form.handleSubmit(async () => {
     const valores = form.getValues();
-    const resultado = await iniciarSesion(valores);
+    const resultado = await iniciarSesion(valores, (await antispam.obtener()).captcha);
     if (resultado && !resultado.ok) {
       aplicarErroresServidor(form, resultado);
       setCorreoSinConfirmar(resultado.codigo === "email_not_confirmed" ? valores.email : null);
@@ -37,12 +39,13 @@ export function FormularioIngreso({ siguiente }: { siguiente?: string }) {
 
   async function reenviar() {
     if (!correoSinConfirmar) return;
-    const resultado = await reenviarConfirmacion({ email: correoSinConfirmar });
+    const resultado = await reenviarConfirmacion({ email: correoSinConfirmar }, (await antispam.obtener()).captcha);
     setReenvio(resultado.ok ? (resultado.mensaje ?? "Correo enviado.") : resultado.error);
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-5">
+    <form onSubmit={onSubmit} noValidate className="relative space-y-5">
+      {antispam.campos}
       {errors.root?.servidor && (
         <Alerta tono="error">
           {errors.root.servidor.message}

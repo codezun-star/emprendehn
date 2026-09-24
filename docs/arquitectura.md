@@ -82,11 +82,14 @@ src/
       negocios/nuevo/page.tsx
       negocios/[id]/page.tsx      # editar datos + horario
       negocios/[id]/galeria/page.tsx
+      cuenta/page.tsx             # datos de la cuenta + eliminar cuenta
     admin/                        # requiere rol admin
       layout.tsx
-      page.tsx                    # negocios, filtro por estado
+      page.tsx                    # negocios, filtro por estado y "Cambios por revisar"
       negocios/[id]/page.tsx      # revisar / aprobar / rechazar / suspender
       categorias/page.tsx
+      reportes/page.tsx           # reportes de visitantes (abiertos / resueltos)
+    (publico)/privacidad, terminos, contacto, cuenta-eliminada
     sitemap.ts
     robots.ts
     layout.tsx  globals.css  not-found.tsx
@@ -214,6 +217,14 @@ penaliza Google.
   `RESEND_API_KEY`). `moderarNegocio` avisa al dueño cuando su negocio pasa a `aprobado`,
   `rechazado` o `suspendido` (`lib/correos/moderacion.ts`). Si el envío falla, el cambio
   de estado no se deshace; el panel de admin muestra el resultado.
+- **Avisos al admin** (`lib/correos/avisos-admin.ts`, a `CORREO_ADMIN` o al correo de
+  contacto): negocio nuevo, negocio que vuelve a revisión, primer cambio sin revisar de
+  un negocio publicado y primer reporte abierto de un negocio. Se envían con `after()`,
+  así que no hacen esperar al usuario.
+- **Spam sin fricción** (`lib/antispam.ts`, `components/forms/antispam.tsx`): campo
+  trampa invisible y tiempo mínimo en registro, recuperación y reportes; bloqueo de
+  correos temporales en el registro. CAPTCHA de Turnstile en modo invisible, apagado
+  salvo que exista `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (el token lo valida Supabase Auth).
 - Tendrás que ajustar las plantillas de email en el dashboard. Te daré el texto exacto
   cuando lleguemos a ese paso.
 
@@ -223,7 +234,9 @@ penaliza Google.
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=   # sb_publishable_… (la anon key legacy también funciona aquí)
 NEXT_PUBLIC_SITE_URL=http://localhost:3000   # https://emprendehn.com en producción
-RESEND_API_KEY=                               # solo servidor; aviso de negocio aprobado
+RESEND_API_KEY=                               # solo servidor; correos al dueño y al admin
+CORREO_ADMIN=                                 # opcional; por defecto codezun@gmail.com
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=               # opcional; CAPTCHA invisible
 ```
 
 **No hace falta la service role / secret key en el MVP.** Todo, admin incluido, pasa por

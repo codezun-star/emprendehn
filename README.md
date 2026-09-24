@@ -37,7 +37,9 @@ cp .env.example .env.local   # completar URL y publishable key de Supabase
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<project-ref>.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` (la anon key legacy también funciona) |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` en desarrollo y `https://emprendehn.com` en producción |
-| `RESEND_API_KEY` | Opcional en desarrollo. API key de Resend para el aviso "tu negocio fue aprobado"; sin ella se aprueba igual, pero no se envía el correo |
+| `RESEND_API_KEY` | Opcional en desarrollo. API key de Resend para los correos propios (avisos al dueño y al admin); sin ella todo funciona, pero no se envían |
+| `CORREO_ADMIN` | Opcional. Adónde llegan los avisos al admin (varios separados por coma). Por defecto, `codezun@gmail.com` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Opcional. Activa el CAPTCHA invisible (ver "Protección contra spam") |
 
 No se necesita la service role key: todo, incluido el panel de admin, pasa por RLS.
 
@@ -58,6 +60,7 @@ ejecutar sin romper nada.
 | 008 | `storage` | Bucket público `business-images` (5 MB, JPEG/PNG/WebP) y políticas de Storage |
 | 009 | `funciones_directorio` | RPC `buscar_negocios` y `resumen_directorio` |
 | 010 | `revision_de_cambios` | Revisión posterior de cambios en negocios publicados; los suspendidos vuelven a revisión al corregirse |
+| 011 | `reportes_y_cuenta` | Reportes de negocios (`business_reports` + `reportar_negocio`) y `eliminar_mi_cuenta` |
 
 ### 3. Configuración de Supabase Auth (dashboard)
 
@@ -82,8 +85,14 @@ ejecutar sin romper nada.
    `smtp.resend.com`, puerto `465`, usuario `resend`, tu API key como contraseña, remitente
    `no-reply@emprendehn.com` y nombre `EmprendeHN`. Con SMTP propio el límite arranca en 30
    por hora; súbelo en *Authentication → Rate Limits*.
-5. *(Recomendado)* **Attack Protection**: activa CAPTCHA (Turnstile o hCaptcha) para frenar
-   registros automatizados.
+5. **Protección contra spam**: ya funciona sin configurar nada (campo trampa invisible,
+   tiempo mínimo de llenado, bloqueo de correos temporales, confirmación de correo y tu
+   moderación). Si aun así aparecen registros falsos, activa el CAPTCHA **invisible**:
+   1. En Cloudflare → Turnstile crea un widget de tipo **Invisible** para `emprendehn.com`.
+   2. En Vercel agrega `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (la *site key*) y vuelve a desplegar.
+   3. Después, en Supabase → *Authentication → Attack Protection*, activa CAPTCHA con
+      Turnstile y pega la *secret key*. En ese orden: si lo activas antes del paso 2, nadie
+      podrá registrarse ni iniciar sesión.
 
 ### 4. Primer administrador
 
@@ -172,7 +181,7 @@ supabase/templates/       plantillas de correo de Auth
 El build **prerenderiza con datos reales** el inicio, `/categorias` y el sitemap. Por eso
 el orden importa:
 
-1. **Aplica las migraciones 001–010** en tu proyecto de Supabase. Si faltan, el build
+1. **Aplica las migraciones 001–011** en tu proyecto de Supabase. Si faltan, el build
    falla con el aviso "¿Ya aplicaste las migraciones…?".
 2. **Variables de entorno** en *Vercel → Project → Settings → Environment Variables*,
    marcando **Production** y **Preview**:
@@ -197,8 +206,18 @@ que se probó el proyecto.
 
 ## Cómo se validó
 
-Las migraciones y la app se probaron contra un Supabase **local y desechable** (Supabase
-CLI + Docker en el entorno de desarrollo), nunca contra el proyecto real:
+**Revisión automática:** cada push a `main` corre en GitHub Actions
+(`.github/workflows/revision.yml`) el lint, los tipos y `scripts/probar-migraciones.sh`,
+que aplica todas las migraciones (dos veces, para comprobar que son idempotentes) sobre un
+Postgres limpio que imita a Supabase y ejecuta las pruebas de `supabase/tests/`. Para
+correrlo en tu máquina con un Postgres local desechable:
+
+```bash
+PGHOST=localhost PGUSER=postgres PGPASSWORD=postgres scripts/probar-migraciones.sh
+```
+
+Las primeras migraciones y la app también se probaron contra un Supabase **local y
+desechable** (Supabase CLI + Docker), nunca contra el proyecto real:
 
 - Pruebas de RLS y triggers con usuarios `anon`, dueño, otro dueño y admin: permisos,
   slugs con colisión, límites de negocios y fotos, reenvío a revisión.

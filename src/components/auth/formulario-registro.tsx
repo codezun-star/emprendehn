@@ -2,9 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MailCheck } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { useAntispam } from "@/components/forms/antispam";
 import { aplicarErroresServidor } from "@/components/forms/errores";
 import { InputContrasena } from "@/components/forms/input-contrasena";
 import { Alerta } from "@/components/ui/alerta";
@@ -25,9 +27,10 @@ export function FormularioRegistro() {
 
   const [correoEnviado, setCorreoEnviado] = useState<string | null>(null);
   const [reenvio, setReenvio] = useState<string | null>(null);
+  const antispam = useAntispam();
 
   const onSubmit = form.handleSubmit(async () => {
-    const resultado = await registrarse(form.getValues());
+    const resultado = await registrarse(form.getValues(), await antispam.obtener());
     if (!resultado) return;
     if (resultado.ok) setCorreoEnviado(resultado.datos?.email ?? form.getValues("email"));
     else aplicarErroresServidor(form, resultado);
@@ -35,7 +38,8 @@ export function FormularioRegistro() {
 
   if (correoEnviado) {
     return (
-      <div className="space-y-4 text-center">
+      <div className="relative space-y-4 text-center">
+        {antispam.campos}
         <MailCheck className="mx-auto size-12 text-brand" aria-hidden />
         <h2 className="text-xl font-bold text-brand-dark">Revisa tu correo</h2>
         <p className="text-sm text-ink/80">
@@ -46,7 +50,7 @@ export function FormularioRegistro() {
         <Boton
           variante="secundario"
           onClick={async () => {
-            const r = await reenviarConfirmacion({ email: correoEnviado });
+            const r = await reenviarConfirmacion({ email: correoEnviado }, (await antispam.obtener()).captcha);
             setReenvio(r.ok ? (r.mensaje ?? "Correo enviado.") : r.error);
           }}
         >
@@ -57,8 +61,9 @@ export function FormularioRegistro() {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-5">
+    <form onSubmit={onSubmit} noValidate className="relative space-y-5">
       {errors.root?.servidor && <Alerta tono="error">{errors.root.servidor.message}</Alerta>}
+      {antispam.campos}
 
       <Campo etiqueta="Tu nombre" htmlFor="nombre_completo" error={errors.nombre_completo?.message}>
         <Input
@@ -102,6 +107,10 @@ export function FormularioRegistro() {
       <Boton type="submit" cargando={isSubmitting} variante="acento" className="w-full" tamano="lg">
         Crear mi cuenta gratis
       </Boton>
+      <p className="text-center text-xs text-ink/60">
+        Al crear tu cuenta aceptas los <Link href="/terminos">Términos y condiciones</Link> y la{" "}
+        <Link href="/privacidad">Política de privacidad</Link>.
+      </p>
     </form>
   );
 }

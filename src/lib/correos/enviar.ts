@@ -13,7 +13,7 @@ const API_RESEND = "https://api.resend.com/emails";
 export type ResultadoEnvio = "enviado" | "sin-configurar" | "error";
 
 /** Envía un correo. Nunca lanza: un fallo de correo no debe deshacer la acción que lo originó. */
-export async function enviarCorreo(para: string, correo: Correo): Promise<ResultadoEnvio> {
+export async function enviarCorreo(para: string | string[], correo: Correo): Promise<ResultadoEnvio> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.warn(`[correo] RESEND_API_KEY no está definida; no se envió "${correo.asunto}".`);
@@ -26,7 +26,7 @@ export async function enviarCorreo(para: string, correo: Correo): Promise<Result
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: REMITENTE,
-        to: [para],
+        to: Array.isArray(para) ? para : [para],
         subject: correo.asunto,
         html: correo.html,
         text: correo.texto,

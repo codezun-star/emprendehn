@@ -101,3 +101,24 @@ export async function listarCategoriasAdmin() {
   if (error) throw new Error(`No se pudieron cargar las categorías: ${error.message}`);
   return data.map(({ negocios, ...c }) => ({ ...c, totalNegocios: negocios[0]?.count ?? 0 }));
 }
+
+export async function contarReportesAbiertos() {
+  const supabase = await crearClienteServidor();
+  const { count } = await supabase
+    .from("business_reports")
+    .select("id", { count: "exact", head: true })
+    .eq("estado", "abierto");
+  return count ?? 0;
+}
+
+export async function listarReportes(estado: "abierto" | "resuelto") {
+  const supabase = await crearClienteServidor();
+  const { data, error } = await supabase
+    .from("business_reports")
+    .select("id, motivo, detalle, contacto, estado, created_at, resuelto_en, negocio:businesses(id, nombre, slug, estado)")
+    .eq("estado", estado)
+    .order(estado === "abierto" ? "created_at" : "resuelto_en", { ascending: estado === "abierto" })
+    .limit(100);
+  if (error) throw new Error(`No se pudieron cargar los reportes: ${error.message}`);
+  return data;
+}

@@ -3,9 +3,10 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { eliminarArchivosNegocio } from "@/lib/archivos-negocio";
 import { obtenerSesion } from "@/lib/auth";
+import { avisoPorCambio, programarAvisoAdmin } from "@/lib/correos/avisos-admin";
 import { revalidarDirectorio } from "@/lib/revalidacion";
-import { BUCKET_IMAGENES } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { falloValidacion, type ResultadoAccion } from "@/lib/validaciones/comun";
 import { limpiarRedes, negocioSchema, type NegocioInput, type NegocioOutput } from "@/lib/validaciones/negocio";
@@ -46,6 +47,13 @@ export async function crearNegocio(input: NegocioInput): Promise<ResultadoAccion
     .single();
   if (error) return errorDeBaseDeDatos(error);
 
+  const nombreDueno = sesion.perfil?.nombre_completo;
+  programarAvisoAdmin({
+    tipo: "nuevo",
+    negocioId: data.id,
+    nombre: parsed.data.nombre,
+    dueno: nombreDueno ? `${nombreDueno} (${sesion.email})` : sesion.email,
+  });
   redirect(`/panel/negocios/${data.id}/galeria?nuevo=1`);
 }
 
@@ -60,7 +68,7 @@ export async function actualizarNegocio(id: string, input: NegocioInput): Promis
   const supabase = await crearClienteServidor();
   const { data: anterior, error: errorLectura } = await supabase
     .from("businesses")
-    .select("slug, category_id, municipio_id, estado")
+    .select("slug, category_id, municipio_id, estado, cambios_por_revisar_desde")
     .eq("id", id)
     .eq("owner_id", sesion.userId)
     .maybeSingle();
@@ -72,11 +80,17 @@ export async function actualizarNegocio(id: string, input: NegocioInput): Promis
     .update(aFila(parsed.data))
     .eq("id", id)
     .eq("owner_id", sesion.userId)
-    .select("slug, category_id, municipio_id, estado")
+    .select("slug, category_id, municipio_id, estado, cambios_por_revisar, cambios_por_revisar_desde")
     .single();
   if (error) return errorDeBaseDeDatos(error);
 
   if (anterior.estado === "aprobado") await revalidarDirectorio(anterior, nuevo);
+
+  const aviso = avisoPorCambio(anterior, nuevo);
+  if (aviso === "reenviado") programarAvisoAdmin({ tipo: aviso, negocioId: id, nombre: parsed.data.nombre });
+  if (aviso === "cambios") {
+    programarAvisoAdmin({ tipo: aviso, negocioId: id, nombre: parsed.data.nombre, cambios: nuevo.cambios_por_revisar });
+  }
 
   // Rechazado o suspendido: el trigger lo devuelve a revisión (migración 010).
   const mensaje =
@@ -104,20 +118,11 @@ export async function eliminarNegocio(id: string): Promise<ResultadoAccion> {
 
   // Primero los archivos: las políticas de Storage verifican que el negocio
   // exista y sea tuyo, así que después de borrar la fila ya no se podría.
-  await eliminarCarpeta(id);
+  await eliminarArchivosNegocio(id);
 
   const { error } = await supabase.from("businesses").delete().eq("id", id).eq("owner_id", sesion.userId);
   if (error) return errorDeBaseDeDatos(error);
 
   if (negocio.estado === "aprobado") await revalidarDirectorio(negocio);
   redirect("/panel?aviso=negocio-eliminado");
-}
-
-/** Borra todos los archivos de la carpeta del negocio en Storage (mejor esfuerzo). */
-async function eliminarCarpeta(negocioId: string) {
-  const supabase = await crearClienteServidor();
-  const { data: archivos } = await supabase.storage.from(BUCKET_IMAGENES).list(negocioId, { limit: 100 });
-  if (archivos?.length) {
-    await supabase.storage.from(BUCKET_IMAGENES).remove(archivos.map((a) => `${negocioId}/${a.name}`));
-  }
 }

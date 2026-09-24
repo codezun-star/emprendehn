@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { esCorreoDesechable } from "./correos-desechables";
+
 const email = z
   .string()
   .trim()
@@ -19,7 +21,9 @@ export const registroSchema = z
       .trim()
       .min(2, "Escribe tu nombre")
       .max(120, "Máximo 120 caracteres"),
-    email,
+    email: email.refine((e) => !esCorreoDesechable(e), {
+      error: "Usa un correo personal o de tu negocio: no aceptamos correos temporales.",
+    }),
     password,
     confirmar: z.string(),
   })

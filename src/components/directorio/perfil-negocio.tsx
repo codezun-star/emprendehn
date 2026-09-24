@@ -1,6 +1,7 @@
 import { Clock, Globe, Mail, MapPin, MessageCircle, Phone, Share2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { Migas } from "@/components/directorio/migas";
 import type { Categoria, Municipio } from "@/lib/consultas/directorio";
@@ -69,6 +70,7 @@ export function PerfilNegocio({
   categoriaPadre,
   ciudad,
   barraContactoMovil = false,
+  debajoDeContacto,
 }: {
   negocio: DatosPerfil;
   categoria: Categoria | undefined;
@@ -76,6 +78,8 @@ export function PerfilNegocio({
   ciudad: Municipio | undefined;
   /** Barra fija con WhatsApp/Llamar en pantallas pequeñas (solo en la página pública). */
   barraContactoMovil?: boolean;
+  /** Solo en la página pública (p. ej. "Reportar este negocio"). */
+  debajoDeContacto?: ReactNode;
 }) {
   const horario = parsearHorario(negocio.horario);
   const redes = redesDe(negocio.redes_sociales);
@@ -272,6 +276,7 @@ export function PerfilNegocio({
               <Share2 className="size-4" aria-hidden /> Compartir este negocio
             </a>
           </div>
+          {debajoDeContacto && <div className="mt-3 flex justify-center">{debajoDeContacto}</div>}
         </aside>
       </div>
 

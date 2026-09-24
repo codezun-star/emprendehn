@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { useAntispam } from "@/components/forms/antispam";
 import { aplicarErroresServidor } from "@/components/forms/errores";
 import { Alerta } from "@/components/ui/alerta";
 import { Boton } from "@/components/ui/boton";
@@ -21,9 +22,10 @@ export function FormularioRecuperacion() {
     formState: { errors, isSubmitting },
   } = form;
   const [enviado, setEnviado] = useState(false);
+  const antispam = useAntispam();
 
   const onSubmit = form.handleSubmit(async () => {
-    const resultado = await solicitarRecuperacion(form.getValues());
+    const resultado = await solicitarRecuperacion(form.getValues(), await antispam.obtener());
     if (resultado.ok) setEnviado(true);
     else aplicarErroresServidor(form, resultado);
   });
@@ -38,8 +40,9 @@ export function FormularioRecuperacion() {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-5">
+    <form onSubmit={onSubmit} noValidate className="relative space-y-5">
       {errors.root?.servidor && <Alerta tono="error">{errors.root.servidor.message}</Alerta>}
+      {antispam.campos}
       <Campo etiqueta="Correo electrónico" htmlFor="email" error={errors.email?.message}>
         <Input
           {...ariaCampo("email", errors.email?.message)}

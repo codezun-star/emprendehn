@@ -1,0 +1,19 @@
+// Dominios de correo temporal más usados para crear cuentas falsas.
+// Si alguien legítimo queda bloqueado, quita su dominio de la lista.
+const DOMINIOS = new Set([
+  "10minutemail.com", "10minutemail.net", "20minutemail.com", "33mail.com", "burnermail.io",
+  "discard.email", "dispostable.com", "dropmail.me", "emailondeck.com", "fakeinbox.com",
+  "getairmail.com", "getnada.com", "guerrillamail.biz", "guerrillamail.com", "guerrillamail.de",
+  "guerrillamail.info", "guerrillamail.net", "guerrillamail.org", "guerrillamailblock.com",
+  "harakirimail.com", "inboxkitten.com", "incognitomail.org", "jetable.org", "mail.tm",
+  "mailcatch.com", "maildrop.cc", "mailinator.com", "mailinator.net", "mailnesia.com",
+  "mintemail.com", "moakt.com", "mohmal.com", "mytemp.email", "nada.email", "sharklasers.com",
+  "spam4.me", "spamgourmet.com", "temp-mail.io", "temp-mail.org", "tempail.com", "tempmail.com",
+  "tempmail.dev", "tempmail.net", "tempmailo.com", "tempr.email", "throwawaymail.com",
+  "trashmail.com", "trashmail.de", "yopmail.com", "yopmail.fr", "yopmail.net",
+]);
+
+export function esCorreoDesechable(email: string): boolean {
+  const dominio = email.split("@").pop()?.toLowerCase() ?? "";
+  return DOMINIOS.has(dominio);
+}

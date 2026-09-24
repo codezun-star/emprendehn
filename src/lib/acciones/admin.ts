@@ -100,6 +100,20 @@ export async function moderarNegocio(
   return { ok: true, mensaje: `${mensajes[estado]} ${AVISO_CORREO[envio](anterior.dueno.email)}` };
 }
 
+/** Admin: marca un reporte como resuelto (o lo reabre). */
+export async function resolverReporte(id: string, resuelto: boolean): Promise<ResultadoAccion> {
+  const supabase = await clienteAdmin();
+  if (!supabase) return NO_AUTORIZADO;
+  if (!z.uuid().safeParse(id).success) return { ok: false, error: "Reporte no encontrado." };
+
+  const { error } = await supabase
+    .from("business_reports")
+    .update(resuelto ? { estado: "resuelto", resuelto_en: new Date().toISOString() } : { estado: "abierto", resuelto_en: null })
+    .eq("id", id);
+  if (error) return errorDeBaseDeDatos(error);
+  return { ok: true, mensaje: resuelto ? "Reporte resuelto." : "Reporte reabierto." };
+}
+
 /** Admin: los cambios publicados de un negocio aprobado ya se revisaron. */
 export async function marcarCambiosRevisados(id: string): Promise<ResultadoAccion> {
   const supabase = await clienteAdmin();

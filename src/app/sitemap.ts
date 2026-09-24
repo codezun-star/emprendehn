@@ -39,6 +39,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: urlAbsoluta("/"), lastModified: masReciente, changeFrequency: "daily", priority: 1 },
     { url: urlAbsoluta("/categorias"), changeFrequency: "weekly", priority: 0.6 },
+    ...["/contacto", "/privacidad", "/terminos"].map((ruta) => ({
+      url: urlAbsoluta(ruta),
+      changeFrequency: "yearly" as const,
+      priority: 0.2,
+    })),
     ...categorias
       .filter((c) => ultimaActualizacionPorCategoria.has(c.slug))
       .map((c) => ({

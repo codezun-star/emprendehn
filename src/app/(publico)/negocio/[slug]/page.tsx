@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { PerfilNegocio } from "@/components/directorio/perfil-negocio";
+import { ReportarNegocio } from "@/components/directorio/reportar-negocio";
 import { RejillaNegocios } from "@/components/directorio/tarjeta-negocio";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
@@ -90,6 +91,7 @@ export default async function PaginaNegocio({ params }: PageProps<"/negocio/[slu
         categoriaPadre={categoriaPadre}
         ciudad={ciudad}
         barraContactoMovil
+        debajoDeContacto={<ReportarNegocio negocioId={negocio.id} nombre={negocio.nombre} />}
       />
       {relacionados.length > 0 && categoria && ciudad && (
         <section className="mx-auto max-w-6xl px-4 pb-8">

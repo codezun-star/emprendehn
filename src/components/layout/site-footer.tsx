@@ -58,9 +58,20 @@ export async function SiteFooter() {
         </nav>
       </div>
       <div className="border-t border-white/10">
-        <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-white/60">
-          © {new Date().getFullYear()} EmprendeHN · Hecho en Honduras 🇭🇳
-        </p>
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-4 text-xs text-white/60">
+          <p>© {new Date().getFullYear()} EmprendeHN · Hecho en Honduras 🇭🇳</p>
+          <nav aria-label="Legal" className="flex flex-wrap gap-x-4 gap-y-1">
+            <Link href="/privacidad" className="text-white/70 no-underline hover:text-white">
+              Privacidad
+            </Link>
+            <Link href="/terminos" className="text-white/70 no-underline hover:text-white">
+              Términos
+            </Link>
+            <Link href="/contacto" className="text-white/70 no-underline hover:text-white">
+              Contacto
+            </Link>
+          </nav>
+        </div>
       </div>
     </footer>
   );

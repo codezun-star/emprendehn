@@ -3,6 +3,7 @@
 import { z } from "zod";
 
 import { obtenerSesion } from "@/lib/auth";
+import { avisoPorCambio, programarAvisoAdmin } from "@/lib/correos/avisos-admin";
 import { revalidarDirectorio } from "@/lib/revalidacion";
 import { BUCKET_IMAGENES } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
@@ -45,7 +46,7 @@ async function negocioPropio({ sesion, supabase }: Contexto, negocioId: string) 
   if (!sesion) return null;
   const { data } = await supabase
     .from("businesses")
-    .select("id, slug, category_id, municipio_id, estado, logo_path")
+    .select("id, nombre, slug, category_id, municipio_id, estado, logo_path, cambios_por_revisar_desde")
     .eq("id", negocioId)
     .eq("owner_id", sesion.userId)
     .maybeSingle();
@@ -54,6 +55,24 @@ async function negocioPropio({ sesion, supabase }: Contexto, negocioId: string) 
 
 async function revalidarSiPublicado(negocio: { estado: string; slug: string; category_id: string; municipio_id: number }) {
   if (negocio.estado === "aprobado") await revalidarDirectorio(negocio);
+}
+
+/**
+ * Tras una foto o un logo nuevo: avisa al admin si el negocio volvió a revisión
+ * o si es el primer cambio sin revisar de un negocio publicado (migración 010).
+ */
+async function avisarSiCambio(ctx: Contexto, antes: NonNullable<Awaited<ReturnType<typeof negocioPropio>>>) {
+  const { data: despues } = await ctx.supabase
+    .from("businesses")
+    .select("estado, cambios_por_revisar, cambios_por_revisar_desde")
+    .eq("id", antes.id)
+    .maybeSingle();
+  if (!despues) return;
+  const tipo = avisoPorCambio(antes, despues);
+  if (tipo === "reenviado") programarAvisoAdmin({ tipo, negocioId: antes.id, nombre: antes.nombre });
+  if (tipo === "cambios") {
+    programarAvisoAdmin({ tipo, negocioId: antes.id, nombre: antes.nombre, cambios: despues.cambios_por_revisar });
+  }
 }
 
 export async function registrarImagen(input: z.input<typeof registroSchema>): Promise<ResultadoAccion> {
@@ -76,6 +95,7 @@ export async function registrarImagen(input: z.input<typeof registroSchema>): Pr
   }
 
   await revalidarSiPublicado(negocio);
+  await avisarSiCambio(ctx, negocio);
   return { ok: true };
 }
 
@@ -174,6 +194,7 @@ export async function actualizarLogo(input: z.input<typeof logoSchema>): Promise
   if (negocio.logo_path) await ctx.supabase.storage.from(BUCKET_IMAGENES).remove([negocio.logo_path]);
 
   await revalidarSiPublicado(negocio);
+  await avisarSiCambio(ctx, negocio);
   return { ok: true };
 }
 

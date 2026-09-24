@@ -15,6 +15,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      business_reports: {
+        Row: {
+          business_id: string
+          contacto: string | null
+          created_at: string
+          detalle: string | null
+          estado: string
+          id: string
+          motivo: string
+          resuelto_en: string | null
+        }
+        Insert: {
+          business_id: string
+          contacto?: string | null
+          created_at?: string
+          detalle?: string | null
+          estado?: string
+          id?: string
+          motivo: string
+          resuelto_en?: string | null
+        }
+        Update: {
+          business_id?: string
+          contacto?: string | null
+          created_at?: string
+          detalle?: string | null
+          estado?: string
+          id?: string
+          motivo?: string
+          resuelto_en?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_reports_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_images: {
         Row: {
           alt_text: string | null
@@ -367,9 +408,15 @@ export type Database = {
         }[]
       }
       construir_tsquery: { Args: { p_texto: string }; Returns: unknown }
+      eliminar_mi_cuenta: { Args: never; Returns: undefined }
       es_contexto_privilegiado: { Args: never; Returns: boolean }
       es_dueno_negocio: { Args: { p_business_id: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      puedo_eliminar_mi_cuenta: { Args: never; Returns: boolean }
+      reportar_negocio: {
+        Args: { p_business_id: string; p_motivo: string; p_detalle?: string; p_contacto?: string }
+        Returns: boolean
+      }
       puede_gestionar_archivo_negocio: {
         Args: { p_ruta: string }
         Returns: boolean

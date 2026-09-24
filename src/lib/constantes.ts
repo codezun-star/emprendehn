@@ -1,3 +1,9 @@
+/** Correo de contacto público (páginas legales, contacto) y destino por defecto de los avisos al admin. */
+export const CORREO_CONTACTO = "codezun@gmail.com";
+
+/** Fecha de la última actualización de Privacidad y Términos (cámbiala al editarlos). */
+export const ACTUALIZACION_LEGALES = "24 de septiembre de 2026";
+
 /** Debe coincidir con max_negocios_por_cuenta en supabase/migrations/006_businesses.sql */
 export const MAX_NEGOCIOS_POR_CUENTA = 3;
 

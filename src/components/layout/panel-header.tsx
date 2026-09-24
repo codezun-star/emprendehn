@@ -27,6 +27,9 @@ export function PanelHeader({
           <Link href="/panel" className={`${enlace} ${seccion === "panel" ? "text-brand" : "text-brand-dark"}`}>
             Mis negocios
           </Link>
+          <Link href="/panel/cuenta" className={`${enlace} text-brand-dark`}>
+            Mi cuenta
+          </Link>
           {esAdmin && (
             <Link href="/admin" className={`${enlace} ${seccion === "admin" ? "text-brand" : "text-brand-dark"}`}>
               Administración

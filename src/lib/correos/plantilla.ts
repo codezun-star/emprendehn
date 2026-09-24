@@ -88,11 +88,14 @@ export function documentoCorreo({
   resumen,
   contenido,
   urlSitio,
+  pie = "Recibiste este correo porque registraste un negocio en EmprendeHN.",
 }: {
   asunto: string;
   resumen: string;
   contenido: string;
   urlSitio: string;
+  /** Primera línea del pie: por qué la persona recibe este correo. */
+  pie?: string;
 }): string {
   return `<!doctype html>
 <html lang="es">
@@ -121,7 +124,7 @@ export function documentoCorreo({
         </tr>
         <tr>
           <td align="center" style="padding:24px 16px 0;font-family:${FUENTE};font-size:13px;line-height:1.6;color:${TEXTO_SECUNDARIO};">
-            Recibiste este correo porque registraste un negocio en EmprendeHN.<br>
+            ${escaparHtml(pie)}<br>
             <a href="${urlSitio}" target="_blank" style="color:${TEXTO_SECUNDARIO};">EmprendeHN</a> · Directorio de emprendedores de Honduras
           </td>
         </tr>
