@@ -35,6 +35,10 @@ export async function revalidarDirectorio(...refs: Array<RefNegocio | null | und
   }
 
   for (const ruta of rutas) revalidatePath(ruta);
+  // Páginas 2, 3… de los listados (/categoria/…/pagina/N): un negocio que entra
+  // o sale corre a todos los siguientes, así que se revalidan todas.
+  revalidatePath("/categoria/[categoria]/pagina/[pagina]", "page");
+  revalidatePath("/categoria/[categoria]/[ciudad]/pagina/[pagina]", "page");
 }
 
 /** Pestañas del negocio en el panel del dueño (estado y "Cambios en revisión"). */

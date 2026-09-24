@@ -52,7 +52,8 @@ export function jsonLdSitio() {
   };
 }
 
-export function jsonLdListado(nombre: string, negocios: { nombre: string; slug: string }[]) {
+/** `desde`: posición del primero (en la página 2 de 24 en 24, empieza en 25). */
+export function jsonLdListado(nombre: string, negocios: { nombre: string; slug: string }[], desde = 1) {
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -60,7 +61,7 @@ export function jsonLdListado(nombre: string, negocios: { nombre: string; slug: 
     numberOfItems: negocios.length,
     itemListElement: negocios.map((n, i) => ({
       "@type": "ListItem",
-      position: i + 1,
+      position: desde + i,
       name: n.nombre,
       url: urlAbsoluta(`/negocio/${n.slug}`),
     })),

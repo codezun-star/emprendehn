@@ -1,4 +1,4 @@
-import { ArrowUpRight, Clock, Mail, MapPin, MessageCircle, Navigation, Phone, Star } from "lucide-react";
+import { ArrowUpRight, Clock, MapPin, MessageCircle, Navigation, Phone, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment, type ComponentType, type ReactNode } from "react";
@@ -250,9 +250,9 @@ export function PaginaNegocio({
                 )}
               </span>
 
-              {(categoria || ciudad) && (
+              {categoria && (
                 <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-sm font-semibold backdrop-blur">
-                  {[categoria?.nombre, ciudad?.nombre].filter(Boolean).join(" · ")}
+                  {categoria.nombre}
                 </p>
               )}
 
@@ -298,98 +298,40 @@ export function PaginaNegocio({
         </section>
 
         {/* Datos rápidos, montados sobre el borde de la portada */}
-        <div className="relative z-10 mx-auto -mt-10 max-w-6xl px-5">
-          <ul className="grid divide-y divide-ink/10 overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-ink/5 @2xl:auto-cols-fr @2xl:grid-flow-col @2xl:divide-x @2xl:divide-y-0">
-            <DatoRapido icono={MapPin} titulo="Dirección" href="#ubicacion">
-              {negocio.direccion ?? lugar}
-            </DatoRapido>
-            {horario && (
-              <DatoRapido icono={Clock} titulo="Horario" href="#horario">
-                <HorarioHoy horario={horario} />
-              </DatoRapido>
-            )}
-            {(negocio.telefono ?? negocio.whatsapp) && (
-              <DatoRapido
-                icono={negocio.telefono ? Phone : MessageCircle}
-                titulo={negocio.telefono ? "Teléfono" : "WhatsApp"}
-                href={telefono ?? whatsapp ?? "#contacto"}
-                externo={!telefono}
-                evento={telefono ? "llamada" : "whatsapp"}
-              >
-                {formatearTelefono((negocio.telefono ?? negocio.whatsapp)!)}
-              </DatoRapido>
-            )}
-          </ul>
-        </div>
+        {(negocio.direccion || horario || negocio.telefono || negocio.whatsapp) && (
+          <div className="relative z-10 mx-auto -mt-10 max-w-6xl px-5">
+            <ul className="grid divide-y divide-ink/10 overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-ink/5 @2xl:auto-cols-fr @2xl:grid-flow-col @2xl:divide-x @2xl:divide-y-0">
+              {negocio.direccion && (
+                <DatoRapido icono={MapPin} titulo="Dirección" href="#ubicacion">
+                  {negocio.direccion}
+                </DatoRapido>
+              )}
+              {horario && (
+                <DatoRapido icono={Clock} titulo="Horario" href="#horario">
+                  <HorarioHoy horario={horario} />
+                </DatoRapido>
+              )}
+              {(negocio.telefono ?? negocio.whatsapp) && (
+                <DatoRapido
+                  icono={negocio.telefono ? Phone : MessageCircle}
+                  titulo={negocio.telefono ? "Teléfono" : "WhatsApp"}
+                  href={telefono ?? whatsapp ?? "#contacto"}
+                  externo={!telefono}
+                  evento={telefono ? "llamada" : "whatsapp"}
+                >
+                  {formatearTelefono((negocio.telefono ?? negocio.whatsapp)!)}
+                </DatoRapido>
+              )}
+            </ul>
+          </div>
+        )}
 
         {/* Sobre nosotros */}
-        <section
-          id="sobre"
-          aria-labelledby="titulo-sobre"
-          className="mx-auto grid max-w-6xl scroll-mt-16 gap-10 px-5 py-16 @3xl:py-24 @4xl:grid-cols-[minmax(0,1fr)_22rem] @4xl:gap-16"
-        >
-          <div>
+        <section id="sobre" aria-labelledby="titulo-sobre" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-16 @3xl:py-24">
+          <div className="max-w-3xl">
             <Encabezado antetitulo="Sobre nosotros" titulo={`Conoce ${negocio.nombre}`} id="titulo-sobre" />
             <p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-ink/80">{negocio.descripcion}</p>
           </div>
-
-          <aside className="space-y-6 self-start rounded-2xl bg-brand-light p-6">
-            {(negocio.whatsapp || negocio.telefono || negocio.email_contacto) && (
-              <div>
-                <h3 className="font-bold text-brand-dark">Contáctanos</h3>
-                <ul className="mt-3 space-y-3 text-sm">
-                  {whatsapp && negocio.whatsapp && (
-                    <li>
-                      <a href={whatsapp} data-evento="whatsapp" target="_blank" rel="noopener" className="inline-flex items-center gap-2.5 font-medium text-ink no-underline hover:text-brand">
-                        <MessageCircle className="size-4 text-brand" aria-hidden /> WhatsApp {formatearTelefono(negocio.whatsapp)}
-                      </a>
-                    </li>
-                  )}
-                  {telefono && negocio.telefono && (
-                    <li>
-                      <a href={telefono} data-evento="llamada" className="inline-flex items-center gap-2.5 font-medium text-ink no-underline hover:text-brand">
-                        <Phone className="size-4 text-brand" aria-hidden /> {formatearTelefono(negocio.telefono)}
-                      </a>
-                    </li>
-                  )}
-                  {negocio.email_contacto && (
-                    <li>
-                      <a href={`mailto:${negocio.email_contacto}`} className="inline-flex items-center gap-2.5 break-all font-medium text-ink no-underline hover:text-brand">
-                        <Mail className="size-4 shrink-0 text-brand" aria-hidden /> {negocio.email_contacto}
-                      </a>
-                    </li>
-                  )}
-                </ul>
-              </div>
-            )}
-
-            {redes.length > 0 && (
-              <div>
-                <h3 className="font-bold text-brand-dark">Síguenos</h3>
-                <ul className="mt-3 flex flex-wrap gap-2">
-                  {redes.map(([red, url]) => (
-                    <li key={red}>
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener nofollow"
-                        data-evento="redes"
-                        className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-sm font-semibold text-brand-dark no-underline ring-1 ring-ink/10 hover:bg-brand-dark hover:text-white"
-                      >
-                        <IconoRed red={red} className="size-4" /> {NOMBRES_REDES[red]}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <BotonCompartir
-              titulo={negocio.nombre}
-              url={urlAbsoluta(`/negocio/${negocio.slug}`)}
-              className="text-sm font-semibold text-brand-dark hover:text-brand"
-            />
-          </aside>
         </section>
 
         {/* Fotos (con una sola, ya es la portada) */}
@@ -414,10 +356,6 @@ export function PaginaNegocio({
             <div id="horario" className="scroll-mt-20">
               <Encabezado antetitulo="Horario" titulo="Horario de atención" />
               <div className="mt-6 overflow-hidden rounded-2xl ring-1 ring-ink/10">
-                <div className="flex items-center justify-between gap-2 border-b border-ink/10 px-4 py-3">
-                  <span className="text-sm font-semibold text-brand-dark">Esta semana</span>
-                  <EstadoAbierto horario={horario} />
-                </div>
                 <TablaHorario horario={horario} />
               </div>
               {horario.nota && <p className="mt-3 text-sm text-ink/60">{horario.nota}</p>}
@@ -497,7 +435,7 @@ export function PaginaNegocio({
           </div>
         )}
 
-        {/* Contacto */}
+        {/* Contacto: único lugar con todos los datos de contacto (la dirección está en Ubicación) */}
         <section id="contacto" aria-labelledby="titulo-contacto" className="scroll-mt-16 bg-brand-dark text-white">
           <div className="mx-auto max-w-6xl px-5 py-16 @3xl:py-20">
             <div className="grid gap-8 @4xl:grid-cols-[minmax(0,1fr)_auto] @4xl:items-end">
@@ -506,79 +444,84 @@ export function PaginaNegocio({
                   {contactoPrincipal ? "¿Tienes alguna pregunta?" : `Visita ${negocio.nombre}`}
                 </h2>
                 <p className="mt-3 max-w-xl text-lg text-white/75">
-                  {contactoPrincipal ? "Escríbenos o llámanos, con gusto te atendemos." : lugarCompleto}
+                  {contactoPrincipal
+                    ? "Escríbenos o llámanos, con gusto te atendemos."
+                    : `Te esperamos en ${lugar || "Honduras"}.`}
                 </p>
               </div>
-              {contactoPrincipal && (
-                <div className="flex flex-wrap gap-3">
-                  {whatsapp && (
-                    <a href={whatsapp} data-evento="whatsapp" target="_blank" rel="noopener" className={cn(CTA.base, CTA.acento)}>
-                      <MessageCircle className="size-5" aria-hidden /> WhatsApp
-                    </a>
-                  )}
-                  {telefono && (
-                    <a href={telefono} data-evento="llamada" className={cn(CTA.base, whatsapp ? CTA.claro : CTA.acento)}>
-                      <Phone className="size-5" aria-hidden /> Llamar
-                    </a>
-                  )}
-                </div>
-              )}
+              <div className="flex flex-wrap gap-3">
+                {whatsapp && (
+                  <a href={whatsapp} data-evento="whatsapp" target="_blank" rel="noopener" className={cn(CTA.base, CTA.acento)}>
+                    <MessageCircle className="size-5" aria-hidden /> WhatsApp
+                  </a>
+                )}
+                {telefono && (
+                  <a href={telefono} data-evento="llamada" className={cn(CTA.base, whatsapp ? CTA.claro : CTA.acento)}>
+                    <Phone className="size-5" aria-hidden /> Llamar
+                  </a>
+                )}
+                {!contactoPrincipal && (
+                  <a href="#ubicacion" className={cn(CTA.base, CTA.acento)}>
+                    <MapPin className="size-5" aria-hidden /> Cómo llegar
+                  </a>
+                )}
+              </div>
             </div>
 
-            <dl className="mt-12 grid gap-8 border-t border-white/15 pt-10 text-sm @2xl:grid-cols-2 @4xl:grid-cols-4">
-              <div>
-                <dt className="font-semibold text-white">Dirección</dt>
-                <dd className="mt-1.5 text-white/70">
-                  {negocio.direccion && <span className="block">{negocio.direccion}</span>}
-                  {lugarCompleto}
-                </dd>
-              </div>
-              {(negocio.telefono || negocio.whatsapp) && (
-                <div>
-                  <dt className="font-semibold text-white">Teléfono</dt>
-                  <dd className="mt-1.5 space-y-1 text-white/70">
-                    {negocio.telefono && <span className="block">{formatearTelefono(negocio.telefono)}</span>}
-                    {negocio.whatsapp && negocio.whatsapp !== negocio.telefono && (
-                      <span className="block">WhatsApp {formatearTelefono(negocio.whatsapp)}</span>
-                    )}
-                  </dd>
-                </div>
-              )}
-              {negocio.email_contacto && (
-                <div>
-                  <dt className="font-semibold text-white">Correo</dt>
-                  <dd className="mt-1.5 break-all">
-                    <a href={`mailto:${negocio.email_contacto}`} className="text-white/70 no-underline hover:text-white">
-                      {negocio.email_contacto}
-                    </a>
-                  </dd>
-                </div>
-              )}
-              {redes.length > 0 && (
-                <div>
-                  <dt className="font-semibold text-white">Síguenos</dt>
-                  <dd className="mt-2.5">
-                    <ul className="flex flex-wrap gap-2">
-                      {redes.map(([red, url]) => (
-                        <li key={red}>
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener nofollow"
-                            data-evento="redes"
-                            aria-label={NOMBRES_REDES[red]}
-                            title={NOMBRES_REDES[red]}
-                            className="grid size-10 place-items-center rounded-full bg-white/10 text-white hover:bg-white hover:text-brand-dark"
-                          >
-                            <IconoRed red={red} className="size-5" />
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </dd>
-                </div>
-              )}
-            </dl>
+            <div className="mt-12 flex flex-wrap items-start justify-between gap-x-12 gap-y-8 border-t border-white/15 pt-10 text-sm">
+              <dl className="flex flex-wrap gap-x-12 gap-y-6">
+                {(negocio.telefono || negocio.whatsapp) && (
+                  <div>
+                    <dt className="font-semibold text-white">Teléfono</dt>
+                    <dd className="mt-1.5 space-y-1 text-white/70">
+                      {negocio.telefono && <span className="block">{formatearTelefono(negocio.telefono)}</span>}
+                      {negocio.whatsapp && negocio.whatsapp !== negocio.telefono && (
+                        <span className="block">WhatsApp {formatearTelefono(negocio.whatsapp)}</span>
+                      )}
+                    </dd>
+                  </div>
+                )}
+                {negocio.email_contacto && (
+                  <div>
+                    <dt className="font-semibold text-white">Correo</dt>
+                    <dd className="mt-1.5 break-all">
+                      <a href={`mailto:${negocio.email_contacto}`} className="text-white/70 no-underline hover:text-white">
+                        {negocio.email_contacto}
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                {redes.length > 0 && (
+                  <div>
+                    <dt className="font-semibold text-white">Síguenos</dt>
+                    <dd className="mt-2.5">
+                      <ul className="flex flex-wrap gap-2">
+                        {redes.map(([red, url]) => (
+                          <li key={red}>
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener nofollow"
+                              data-evento="redes"
+                              aria-label={NOMBRES_REDES[red]}
+                              title={NOMBRES_REDES[red]}
+                              className="grid size-10 place-items-center rounded-full bg-white/10 text-white hover:bg-white hover:text-brand-dark"
+                            >
+                              <IconoRed red={red} className="size-5" />
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+              <BotonCompartir
+                titulo={negocio.nombre}
+                url={urlAbsoluta(`/negocio/${negocio.slug}`)}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-white/30 hover:bg-white/10"
+              />
+            </div>
           </div>
         </section>
       </Principal>

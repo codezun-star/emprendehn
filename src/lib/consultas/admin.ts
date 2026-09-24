@@ -111,16 +111,18 @@ export async function contarReportesAbiertos() {
   return count ?? 0;
 }
 
-export async function listarReportes(estado: "abierto" | "resuelto") {
+export async function listarReportes(estado: "abierto" | "resuelto", pagina = 1) {
   const supabase = await crearClienteServidor();
-  const { data, error } = await supabase
+  const { data, count, error } = await supabase
     .from("business_reports")
-    .select("id, motivo, detalle, contacto, estado, created_at, resuelto_en, negocio:businesses(id, nombre, slug, estado)")
+    .select("id, motivo, detalle, contacto, estado, created_at, resuelto_en, negocio:businesses(id, nombre, slug, estado)", {
+      count: "exact",
+    })
     .eq("estado", estado)
     .order(estado === "abierto" ? "created_at" : "resuelto_en", { ascending: estado === "abierto" })
-    .limit(100);
+    .range((pagina - 1) * POR_PAGINA_ADMIN, pagina * POR_PAGINA_ADMIN - 1);
   if (error) throw new Error(`No se pudieron cargar los reportes: ${error.message}`);
-  return data;
+  return { reportes: data, total: count ?? 0 };
 }
 
 export async function contarResenasReportadas() {
@@ -132,15 +134,17 @@ export async function contarResenasReportadas() {
   return count ?? 0;
 }
 
-export async function listarResenasAdmin(vista: "reportadas" | "recientes") {
+export async function listarResenasAdmin(vista: "reportadas" | "recientes", pagina = 1) {
   const supabase = await crearClienteServidor();
   let consulta = supabase
     .from("business_reviews")
-    .select("id, autor_nombre, calificacion, comentario, respuesta, estado, reportada, created_at, negocio:businesses(id, nombre, slug)")
+    .select("id, autor_nombre, calificacion, comentario, respuesta, estado, reportada, created_at, negocio:businesses(id, nombre, slug)", {
+      count: "exact",
+    })
     .order("created_at", { ascending: false })
-    .limit(100);
+    .range((pagina - 1) * POR_PAGINA_ADMIN, pagina * POR_PAGINA_ADMIN - 1);
   if (vista === "reportadas") consulta = consulta.eq("reportada", true);
-  const { data, error } = await consulta;
+  const { data, count, error } = await consulta;
   if (error) throw new Error(`No se pudieron cargar las reseñas: ${error.message}`);
-  return data;
+  return { resenas: data, total: count ?? 0 };
 }

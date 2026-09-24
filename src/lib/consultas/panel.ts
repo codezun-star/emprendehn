@@ -3,6 +3,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
+import { RESENAS_POR_PAGINA } from "@/lib/constantes";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 // Consultas del panel del emprendedor: cliente con sesión; RLS limita a los
@@ -113,15 +114,18 @@ export async function obtenerResumenEstadisticas(negocioIds: string[]) {
 // Reseñas (migración 015). RLS deja al dueño ver todas las de sus negocios.
 // ---------------------------------------------------------------------------
 
-export async function obtenerResenasDeMiNegocio(negocioId: string) {
+export async function obtenerResenasDeMiNegocio(negocioId: string, pagina = 1) {
   const supabase = await crearClienteServidor();
-  const { data, error } = await supabase
+  const { data, count, error } = await supabase
     .from("business_reviews")
-    .select("id, autor_nombre, calificacion, comentario, respuesta, respondida_en, estado, reportada, created_at")
+    .select("id, autor_nombre, calificacion, comentario, respuesta, respondida_en, estado, reportada, created_at", {
+      count: "exact",
+    })
     .eq("business_id", negocioId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range((pagina - 1) * RESENAS_POR_PAGINA, pagina * RESENAS_POR_PAGINA - 1);
   if (error) throw new Error(`No se pudieron cargar las reseñas: ${error.message}`);
-  return data;
+  return { resenas: data, total: count ?? 0 };
 }
 
 /** Reseñas publicadas sin respuesta, por negocio (para avisar en "Mis negocios"). */

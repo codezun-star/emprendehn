@@ -1,10 +1,10 @@
 import { MessageSquareQuote } from "lucide-react";
 
 import type { ResenaPublica } from "@/lib/consultas/directorio";
-import { formatearFecha } from "@/lib/utils";
-
 import { EscribirResena } from "./escribir-resena";
 import { Estrellas } from "./estrellas";
+import { ItemResena } from "./item-resena";
+import { MasResenas } from "./mas-resenas";
 
 /** Reseñas en la página pública del negocio (id="resenas" para enlazar). */
 export function SeccionResenas({
@@ -46,28 +46,11 @@ export function SeccionResenas({
       ) : (
         <ul className="divide-y divide-brand-dark/10">
           {resenas.map((r) => (
-            <li key={r.id} className="space-y-1.5 py-4 first:pt-0 last:pb-0">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-semibold text-ink">{r.autor_nombre}</p>
-                <time dateTime={r.created_at} className="text-xs text-ink/55">
-                  {formatearFecha(r.created_at)}
-                </time>
-              </div>
-              <Estrellas valor={r.calificacion} />
-              {r.comentario && <p className="whitespace-pre-line text-sm text-ink/80">{r.comentario}</p>}
-              {r.respuesta && (
-                <div className="mt-2 rounded-lg bg-brand-light px-4 py-3 text-sm">
-                  <p className="font-semibold text-brand-dark">Respuesta del negocio</p>
-                  <p className="mt-0.5 whitespace-pre-line text-ink/80">{r.respuesta}</p>
-                </div>
-              )}
-            </li>
+            <ItemResena key={r.id} resena={r} />
           ))}
         </ul>
       )}
-      {total > resenas.length && (
-        <p className="text-xs text-ink/55">Se muestran las {resenas.length} reseñas más recientes de {total}.</p>
-      )}
+      {total > resenas.length && <MasResenas negocioId={negocioId} cargadas={resenas.length} total={total} />}
     </section>
   );
 }

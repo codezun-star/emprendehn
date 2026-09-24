@@ -4,17 +4,20 @@ import Link from "next/link";
 import { BotonResolverReporte } from "@/components/admin/boton-resolver-reporte";
 import { InsigniaEstado } from "@/components/ui/insignia-estado";
 import { requerirAdmin } from "@/lib/auth";
-import { contarReportesAbiertos, listarReportes } from "@/lib/consultas/admin";
-import { cn, formatearFecha } from "@/lib/utils";
+import { Paginacion } from "@/components/ui/paginacion";
+import { contarReportesAbiertos, listarReportes, POR_PAGINA_ADMIN } from "@/lib/consultas/admin";
+import { cn, formatearFecha, numeroDePagina, totalDePaginas } from "@/lib/utils";
 import { ETIQUETAS_MOTIVO_REPORTE, type MotivoReporte } from "@/lib/validaciones/reportes";
 
 export const metadata: Metadata = { title: "Reportes" };
 
 export default async function PaginaReportes({ searchParams }: PageProps<"/admin/reportes">) {
   await requerirAdmin();
-  const { estado: param } = await searchParams;
+  const { estado: param, pagina: paramPagina } = await searchParams;
   const estado = param === "resuelto" ? "resuelto" : "abierto";
-  const [reportes, abiertos] = await Promise.all([listarReportes(estado), contarReportesAbiertos()]);
+  const pagina = numeroDePagina(paramPagina);
+  const [{ reportes, total }, abiertos] = await Promise.all([listarReportes(estado, pagina), contarReportesAbiertos()]);
+  const enlace = (n: number) => `/admin/reportes?estado=${estado}${n > 1 ? `&pagina=${n}` : ""}`;
 
   return (
     <div className="space-y-6">
@@ -83,6 +86,8 @@ export default async function PaginaReportes({ searchParams }: PageProps<"/admin
           ))}
         </ul>
       )}
+
+      <Paginacion pagina={pagina} totalPaginas={totalDePaginas(total, POR_PAGINA_ADMIN)} enlace={enlace} />
     </div>
   );
 }

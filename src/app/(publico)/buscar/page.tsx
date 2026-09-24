@@ -5,14 +5,16 @@ import { redirect } from "next/navigation";
 import { Buscador } from "@/components/directorio/buscador";
 import { FiltroAbierto } from "@/components/directorio/filtro-abierto";
 import { RejillaNegocios } from "@/components/directorio/tarjeta-negocio";
-import { BotonEnlace } from "@/components/ui/boton";
+import { Paginacion } from "@/components/ui/paginacion";
 import { RESULTADOS_POR_PAGINA } from "@/lib/constantes";
+import { rutaCategoria } from "@/lib/consultas/categoria";
 import {
   buscarNegocios,
   obtenerCategorias,
   obtenerMunicipios,
   obtenerOpcionesBuscador,
 } from "@/lib/consultas/directorio";
+import { numeroDePagina, totalDePaginas } from "@/lib/utils";
 
 // Página dinámica (depende de la búsqueda). No se indexa: los resultados de
 // búsqueda interna son contenido duplicado para Google; las páginas
@@ -29,7 +31,7 @@ function texto(valor: string | string[] | undefined): string {
 export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar">) {
   const sp = await searchParams;
   const q = texto(sp.q);
-  const pagina = Math.max(1, Math.min(100, Number.parseInt(texto(sp.pagina), 10) || 1));
+  const pagina = Math.min(100, numeroDePagina(sp.pagina));
   const abierto = texto(sp.abierto) === "1";
 
   const [{ porSlug: categorias }, { porSlug: municipios }, opciones] = await Promise.all([
@@ -41,9 +43,7 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
   const ciudad = municipios.get(texto(sp.ciudad));
 
   // Sin texto ni filtro: la página canónica es la de categoría (o categoría + ciudad).
-  if (!q && !abierto && categoria && pagina === 1) {
-    redirect(`/categoria/${categoria.slug}${ciudad ? `/${ciudad.slug}` : ""}`);
-  }
+  if (!q && !abierto && categoria) redirect(rutaCategoria(categoria.slug, ciudad?.slug, pagina));
 
   const { negocios, total } = await buscarNegocios({
     texto: q,
@@ -53,7 +53,7 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
     limite: RESULTADOS_POR_PAGINA,
     desplazamiento: (pagina - 1) * RESULTADOS_POR_PAGINA,
   });
-  const totalPaginas = Math.ceil(Number(total) / RESULTADOS_POR_PAGINA);
+  const totalPaginas = totalDePaginas(Number(total), RESULTADOS_POR_PAGINA);
 
   const enlace = (n: number, conAbierto = abierto) => {
     const params = new URLSearchParams();
@@ -64,7 +64,6 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
     if (n > 1) params.set("pagina", String(n));
     return `/buscar?${params.toString()}`;
   };
-  const enlacePagina = (n: number) => enlace(n);
 
   const descripcionBusqueda = [
     q && `“${q}”`,
@@ -93,6 +92,7 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
           </h1>
           <p className="text-sm text-ink/60">
             {Number(total) === 1 ? "1 negocio encontrado" : `${total} negocios encontrados`}
+            {totalPaginas > 1 && ` · Página ${pagina} de ${totalPaginas}`}
           </p>
         </div>
         <FiltroAbierto href={enlace(1, !abierto)} activo={abierto} />
@@ -110,23 +110,7 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
         </div>
       )}
 
-      {totalPaginas > 1 && (
-        <nav aria-label="Paginación" className="flex items-center justify-center gap-3">
-          {pagina > 1 && (
-            <BotonEnlace href={enlacePagina(pagina - 1)} variante="secundario" rel="prev">
-              ← Anterior
-            </BotonEnlace>
-          )}
-          <span className="text-sm text-ink/60">
-            Página {pagina} de {totalPaginas}
-          </span>
-          {pagina < totalPaginas && (
-            <BotonEnlace href={enlacePagina(pagina + 1)} variante="secundario" rel="next">
-              Siguiente →
-            </BotonEnlace>
-          )}
-        </nav>
-      )}
+      <Paginacion pagina={pagina} totalPaginas={totalPaginas} enlace={(n) => enlace(n)} />
     </div>
   );
 }

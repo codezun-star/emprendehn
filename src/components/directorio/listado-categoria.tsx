@@ -6,6 +6,9 @@ import { FiltroAbierto } from "@/components/directorio/filtro-abierto";
 import { RejillaNegocios } from "@/components/directorio/tarjeta-negocio";
 import { JsonLd } from "@/components/seo/json-ld";
 import { BotonEnlace } from "@/components/ui/boton";
+import { Paginacion } from "@/components/ui/paginacion";
+import { RESULTADOS_POR_PAGINA } from "@/lib/constantes";
+import { rutaCategoria } from "@/lib/consultas/categoria";
 import type {
   Categoria,
   Municipio,
@@ -22,6 +25,8 @@ export function ListadoCategoria({
   ciudad,
   negocios,
   total,
+  pagina,
+  totalPaginas,
   resumen,
   conteoHijas,
 }: {
@@ -31,6 +36,8 @@ export function ListadoCategoria({
   ciudad?: Municipio;
   negocios: ResultadoBusqueda[];
   total: number;
+  pagina: number;
+  totalPaginas: number;
   resumen: ResumenDirectorio[];
   conteoHijas: Map<string, number>;
 }) {
@@ -62,6 +69,12 @@ export function ListadoCategoria({
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-sm font-semibold text-brand">
               {total} {total === 1 ? "negocio" : "negocios"}
+              {totalPaginas > 1 && (
+                <span className="font-normal text-ink/60">
+                  {" "}
+                  · Página {pagina} de {totalPaginas}
+                </span>
+              )}
             </p>
             <FiltroAbierto href={`${busquedaCompleta}&abierto=1`} activo={false} />
           </div>
@@ -89,14 +102,12 @@ export function ListadoCategoria({
       {negocios.length > 0 ? (
         <>
           <RejillaNegocios negocios={negocios} />
-          <JsonLd datos={jsonLdListado(titulo, negocios)} />
-          {total > negocios.length && (
-            <div className="text-center">
-              <BotonEnlace href={`${busquedaCompleta}&pagina=2`} variante="secundario">
-                Ver más resultados
-              </BotonEnlace>
-            </div>
-          )}
+          <JsonLd datos={jsonLdListado(titulo, negocios, (pagina - 1) * RESULTADOS_POR_PAGINA + 1)} />
+          <Paginacion
+            pagina={pagina}
+            totalPaginas={totalPaginas}
+            enlace={(n) => rutaCategoria(categoria.slug, ciudad?.slug, n)}
+          />
         </>
       ) : (
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-brand-dark/10">

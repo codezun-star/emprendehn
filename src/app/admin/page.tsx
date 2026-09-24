@@ -3,12 +3,13 @@ import Link from "next/link";
 
 import { Alerta } from "@/components/ui/alerta";
 import { BotonEnlace } from "@/components/ui/boton";
+import { Paginacion } from "@/components/ui/paginacion";
 import { ETIQUETAS_ESTADO, InsigniaEstado, InsigniaPlan } from "@/components/ui/insignia-estado";
 import { requerirAdmin } from "@/lib/auth";
 import { describirCambios } from "@/lib/constantes";
 import { contarNegociosPorEstado, listarNegociosAdmin, POR_PAGINA_ADMIN, type VistaAdmin } from "@/lib/consultas/admin";
 import { obtenerCategorias, obtenerMunicipios } from "@/lib/consultas/directorio";
-import { cn, formatearFecha } from "@/lib/utils";
+import { cn, formatearFecha, numeroDePagina, totalDePaginas } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Negocios" };
 
@@ -25,7 +26,7 @@ export default async function PaginaAdmin({ searchParams }: PageProps<"/admin">)
   const sp = await searchParams;
   const estado = VISTAS.find((e) => e === texto(sp.estado)) ?? "pendiente";
   const q = texto(sp.q).slice(0, 100);
-  const pagina = Math.max(1, Number.parseInt(texto(sp.pagina), 10) || 1);
+  const pagina = numeroDePagina(sp.pagina);
 
   const [conteos, { negocios, total }, { porId: categorias }, { porId: municipios }] = await Promise.all([
     contarNegociosPorEstado(),
@@ -33,7 +34,7 @@ export default async function PaginaAdmin({ searchParams }: PageProps<"/admin">)
     obtenerCategorias(),
     obtenerMunicipios(),
   ]);
-  const totalPaginas = Math.ceil(total / POR_PAGINA_ADMIN);
+  const totalPaginas = totalDePaginas(total, POR_PAGINA_ADMIN);
   const enlace = (params: Record<string, string | number>) =>
     `/admin?${new URLSearchParams({ estado, ...(q && { q }), ...Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])) })}`;
 
@@ -144,13 +145,7 @@ export default async function PaginaAdmin({ searchParams }: PageProps<"/admin">)
         </div>
       )}
 
-      {totalPaginas > 1 && (
-        <nav aria-label="Paginación" className="flex items-center justify-center gap-3 text-sm">
-          {pagina > 1 && <Link href={enlace({ pagina: pagina - 1 })}>← Anterior</Link>}
-          <span className="text-ink/60">Página {pagina} de {totalPaginas}</span>
-          {pagina < totalPaginas && <Link href={enlace({ pagina: pagina + 1 })}>Siguiente →</Link>}
-        </nav>
-      )}
+      <Paginacion pagina={pagina} totalPaginas={totalPaginas} enlace={(n) => enlace(n > 1 ? { pagina: n } : {})} />
     </div>
   );
 }

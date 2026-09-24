@@ -73,7 +73,7 @@ export function BarraNegocio({
             href={contacto.href}
             data-evento={contacto.tipo}
             {...(contacto.tipo === "whatsapp" && { target: "_blank", rel: "noopener" })}
-            className="hidden shrink-0 items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-bold text-ink no-underline shadow-sm hover:brightness-95 @xl:inline-flex"
+            className="hidden shrink-0 items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-bold text-ink no-underline shadow-sm hover:brightness-95 @3xl:inline-flex"
           >
             {contacto.tipo === "whatsapp" ? (
               <MessageCircle className="size-4" aria-hidden />

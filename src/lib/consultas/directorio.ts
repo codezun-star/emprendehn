@@ -2,6 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 
+import { RESENAS_POR_PAGINA } from "@/lib/constantes";
 import { crearClientePublico } from "@/lib/supabase/publico";
 import type { Database, Tables } from "@/types/database.types";
 
@@ -217,7 +218,7 @@ export type ResenaPublica = {
 };
 
 /** Reseñas publicadas más recientes de un negocio (migración 015). */
-export const obtenerResenasPublicas = cache(async (negocioId: string, limite = 20): Promise<ResenaPublica[]> => {
+export const obtenerResenasPublicas = cache(async (negocioId: string, limite = RESENAS_POR_PAGINA): Promise<ResenaPublica[]> => {
   const { data, error } = await crearClientePublico()
     .from("business_reviews")
     .select("id, autor_nombre, calificacion, comentario, respuesta, created_at")

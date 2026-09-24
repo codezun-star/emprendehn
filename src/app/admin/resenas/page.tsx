@@ -4,17 +4,20 @@ import Link from "next/link";
 import { AccionesResena } from "@/components/admin/acciones-resena";
 import { Estrellas } from "@/components/resenas/estrellas";
 import { requerirAdmin } from "@/lib/auth";
-import { contarResenasReportadas, listarResenasAdmin } from "@/lib/consultas/admin";
-import { cn, formatearFecha } from "@/lib/utils";
+import { Paginacion } from "@/components/ui/paginacion";
+import { contarResenasReportadas, listarResenasAdmin, POR_PAGINA_ADMIN } from "@/lib/consultas/admin";
+import { cn, formatearFecha, numeroDePagina, totalDePaginas } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Reseñas" };
 
 export default async function PaginaResenasAdmin({ searchParams }: PageProps<"/admin/resenas">) {
   await requerirAdmin();
-  const { vista: param } = await searchParams;
+  const { vista: param, pagina: paramPagina } = await searchParams;
   const reportadasTotal = await contarResenasReportadas();
   const vista = param === "recientes" || (param !== "reportadas" && reportadasTotal === 0) ? "recientes" : "reportadas";
-  const resenas = await listarResenasAdmin(vista);
+  const pagina = numeroDePagina(paramPagina);
+  const { resenas, total } = await listarResenasAdmin(vista, pagina);
+  const enlace = (n: number) => `/admin/resenas?vista=${vista}${n > 1 ? `&pagina=${n}` : ""}`;
 
   return (
     <div className="space-y-6">
@@ -81,6 +84,8 @@ export default async function PaginaResenasAdmin({ searchParams }: PageProps<"/a
           ))}
         </ul>
       )}
+
+      <Paginacion pagina={pagina} totalPaginas={totalDePaginas(total, POR_PAGINA_ADMIN)} enlace={enlace} />
     </div>
   );
 }

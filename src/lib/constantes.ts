@@ -7,11 +7,11 @@ export const ACTUALIZACION_LEGALES = "24 de septiembre de 2026";
 /** Debe coincidir con max_negocios_por_cuenta en supabase/migrations/006_businesses.sql */
 export const MAX_NEGOCIOS_POR_CUENTA = 3;
 
-/** Negocios que muestra una página de categoría (el resto, en /buscar paginado). */
-export const LIMITE_LISTADO = 60;
-
-/** Resultados por página en /buscar. */
+/** Negocios por página en las categorías (/categoria/…/pagina/N) y en /buscar. */
 export const RESULTADOS_POR_PAGINA = 24;
+
+/** Reseñas por página (página del negocio: botón "Ver más"; panel del dueño). */
+export const RESENAS_POR_PAGINA = 20;
 
 /**
  * Campos que un negocio publicado cambió y el admin aún no revisa

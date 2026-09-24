@@ -5,17 +5,25 @@ import { Estrellas } from "@/components/resenas/estrellas";
 import { ResponderResena } from "@/components/panel/responder-resena";
 import { Alerta } from "@/components/ui/alerta";
 import { requerirUsuario } from "@/lib/auth";
-import { obtenerMiNegocio, obtenerResenasDeMiNegocio } from "@/lib/consultas/panel";
-import { formatearFecha } from "@/lib/utils";
+import { Paginacion } from "@/components/ui/paginacion";
+import { RESENAS_POR_PAGINA } from "@/lib/constantes";
+import { contarResenasSinResponder, obtenerMiNegocio, obtenerResenasDeMiNegocio } from "@/lib/consultas/panel";
+import { formatearFecha, numeroDePagina, totalDePaginas } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Reseñas" };
 
-export default async function PaginaResenas({ params }: PageProps<"/panel/negocios/[id]/resenas">) {
-  const { id } = await params;
+export default async function PaginaResenas({ params, searchParams }: PageProps<"/panel/negocios/[id]/resenas">) {
+  const [{ id }, sp] = await Promise.all([params, searchParams]);
   const sesion = await requerirUsuario(`/panel/negocios/${id}/resenas`);
   const negocio = await obtenerMiNegocio(sesion.userId, id);
-  const resenas = await obtenerResenasDeMiNegocio(negocio.id);
-  const sinResponder = resenas.filter((r) => r.estado === "publicada" && !r.respuesta).length;
+  const pagina = numeroDePagina(sp.pagina);
+  const [{ resenas, total }, sinResponderPorNegocio] = await Promise.all([
+    obtenerResenasDeMiNegocio(negocio.id, pagina),
+    contarResenasSinResponder([negocio.id]),
+  ]);
+  // Sin responder en TODAS las páginas, no solo en la que se ve.
+  const sinResponder = sinResponderPorNegocio.get(negocio.id) ?? 0;
+  const enlace = (n: number) => `/panel/negocios/${negocio.id}/resenas${n > 1 ? `?pagina=${n}` : ""}`;
 
   return (
     <div className="space-y-6">
@@ -45,7 +53,7 @@ export default async function PaginaResenas({ params }: PageProps<"/panel/negoci
         </Alerta>
       )}
 
-      {resenas.length === 0 ? (
+      {total === 0 ? (
         <div className="rounded-2xl bg-white p-8 text-center text-sm text-ink/65 shadow-sm ring-1 ring-brand-dark/10">
           Todavía no tienes reseñas.{" "}
           {negocio.estado === "aprobado" ? (
@@ -88,6 +96,8 @@ export default async function PaginaResenas({ params }: PageProps<"/panel/negoci
           ))}
         </ul>
       )}
+
+      <Paginacion pagina={pagina} totalPaginas={totalDePaginas(total, RESENAS_POR_PAGINA)} enlace={enlace} />
     </div>
   );
 }

@@ -28,6 +28,16 @@ export function resumir(texto: string, max = 160): string {
   return `${corte.slice(0, ultimoEspacio > max * 0.6 ? ultimoEspacio : corte.length).trimEnd()}…`;
 }
 
+/** Número de página desde la URL (?pagina=3): entero de 1 a 1000; cualquier otra cosa es 1. */
+export function numeroDePagina(valor: string | string[] | undefined): number {
+  const n = Number.parseInt((Array.isArray(valor) ? valor[0] : valor) ?? "", 10);
+  return Number.isInteger(n) && n >= 1 ? Math.min(n, 1000) : 1;
+}
+
+export function totalDePaginas(total: number, porPagina: number): number {
+  return Math.max(1, Math.ceil(total / porPagina));
+}
+
 export function formatearFecha(iso: string): string {
   return new Intl.DateTimeFormat("es-HN", { dateStyle: "medium" }).format(new Date(iso));
 }

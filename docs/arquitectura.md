@@ -67,7 +67,9 @@ src/
       buscar/page.tsx             # resultados ?q=&categoria=&ciudad= (dinámica, noindex)
       categorias/page.tsx         # índice de todas las categorías (enlazado interno)
       categoria/[categoria]/page.tsx
+      categoria/[categoria]/pagina/[pagina]/page.tsx           # páginas 2, 3… (ISR)
       categoria/[categoria]/[ciudad]/page.tsx
+      categoria/[categoria]/[ciudad]/pagina/[pagina]/page.tsx
     (negocio)/                    # layout vacío: la página del negocio trae su barra y su pie
       negocio/[slug]/page.tsx     # PaginaNegocio: portada, fotos, horario, mapa, reseñas, contacto
     (auth)/
@@ -264,6 +266,13 @@ penaliza Google.
   recurso. Mapas con Leaflet + teselas de OpenStreetMap (sin llave de API), cargados solo al
   acercarse a la sección. La base valida que el pin esté dentro de Honduras y que el enlace
   sea de Google Maps; cambiarlo en un negocio publicado queda en "Cambios por revisar".
+- **Paginación** (`components/ui/paginacion.tsx`: enlaces numerados 1 … 4 5 6 … 20, funciona
+  sin JavaScript). Categorías: 24 negocios por página en la ruta
+  (`/categoria/{c}[/{ciudad}]/pagina/{n}`), no en `?pagina=`, para que sigan siendo estáticas
+  (ISR); `/pagina/1` redirige a la URL sin número, una página después de la última es 404 y
+  cada página es canónica de sí misma. `/buscar` (24), el admin (negocios, reportes y reseñas,
+  30) y las reseñas del panel (20) usan `?pagina=`. En la página del negocio se ven las 20
+  reseñas más recientes y "Ver más reseñas" trae las siguientes desde el navegador.
 - **URLs estables** (migración 014): si el admin cambia el slug, el anterior queda en
   `business_slug_redirects` y `/negocio/[viejo]` responde 308 hacia el nuevo.
 - **Ciudad en la URL** (migración 017): `/negocio/{nombre}-{ciudad}` (p. ej.
