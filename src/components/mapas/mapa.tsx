@@ -24,6 +24,8 @@ export function Mapa({
   zoomCentro = 13,
   editable = false,
   perezoso = false,
+  zoomConRueda = false,
+  enfoque = null,
   onCambio,
   etiqueta,
   className,
@@ -40,6 +42,10 @@ export function Mapa({
   editable?: boolean;
   /** Espera a que el mapa entre en pantalla para cargar Leaflet y las teselas. */
   perezoso?: boolean;
+  /** Zoom con la rueda del mouse (p. ej. en pantalla completa). */
+  zoomConRueda?: boolean;
+  /** Llevar la vista a un lugar aunque ya haya pin (resultado de una búsqueda). */
+  enfoque?: (Coordenadas & { zoom: number }) | null;
   onCambio?: (c: Coordenadas) => void;
   etiqueta: string;
   className?: string;
@@ -77,6 +83,7 @@ export function Mapa({
   useEffect(() => {
     if (!visible || !contenedor.current || mapa.current) return;
     let cancelado = false;
+    let observador: ResizeObserver | undefined;
     (async () => {
       const L = await import("leaflet");
       if (cancelado || !contenedor.current) return;
@@ -95,11 +102,15 @@ export function Mapa({
       if (editable) {
         m.on("click", (e) => emitir({ lat: e.latlng.lat, lng: e.latlng.lng }));
       }
+      // Al ampliar o reducir el contenedor, Leaflet debe recalcular su tamaño.
+      observador = new ResizeObserver(() => m.invalidateSize());
+      observador.observe(contenedor.current);
       mapa.current = m;
       setListo(true);
     })();
     return () => {
       cancelado = true;
+      observador?.disconnect();
       mapa.current?.remove();
       mapa.current = null;
       marcador.current = null;
@@ -146,7 +157,18 @@ export function Mapa({
     if (!propio) m.setView([punto.lat, punto.lng], Math.max(m.getZoom(), zoom));
   }, [listo, punto, editable, etiqueta, zoom]);
 
-  // Sin pin: seguir el centro sugerido (la ciudad o una búsqueda).
+  useEffect(() => {
+    const m = mapa.current;
+    if (!listo || !m) return;
+    if (zoomConRueda) m.scrollWheelZoom.enable();
+    else m.scrollWheelZoom.disable();
+  }, [listo, zoomConRueda]);
+
+  useEffect(() => {
+    if (listo && enfoque) mapa.current?.setView([enfoque.lat, enfoque.lng], enfoque.zoom);
+  }, [listo, enfoque]);
+
+  // Sin pin: seguir el centro sugerido (la ciudad elegida en el formulario).
   useEffect(() => {
     if (!listo || punto || !mapa.current) return;
     mapa.current.setView([centro.lat, centro.lng], zoomCentro);

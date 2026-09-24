@@ -254,7 +254,9 @@ penaliza Google.
   negocio con el mismo nombre (muy común en Honduras). Ahora el dueño coloca un pin
   (tocando el mapa, con su ubicación actual, escribiendo coordenadas o pegando el enlace de
   "Compartir" de Google Maps; los enlaces cortos `maps.app.goo.gl` se resuelven en el
-  servidor siguiendo solo redirecciones a dominios de Google). "Cómo llegar" abre la ruta de
+  servidor siguiendo solo redirecciones a dominios de Google). El mapa del formulario se
+  amplía a pantalla completa (la misma instancia de Leaflet cambia de tamaño) y la búsqueda
+  de colonias muestra hasta 5 lugares de la ciudad del negocio para elegir. "Cómo llegar" abre la ruta de
   Google Maps o Waze a esas coordenadas y "Ver ficha en Google Maps" abre el enlace del dueño.
   Sin pin, la portada lleva a la dirección escrita y la búsqueda por texto queda como último
   recurso. Mapas con Leaflet + teselas de OpenStreetMap (sin llave de API), cargados solo al
