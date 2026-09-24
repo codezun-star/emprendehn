@@ -75,9 +75,11 @@ ejecutar sin romper nada.
    inicia sesión si se abre en el mismo navegador donde se hizo el registro o se pidió el cambio.
 4. **SMTP (antes de lanzar)**: el SMTP de Supabase solo envía 2 correos por hora para todo el
    proyecto; al pasarlo, el registro muestra "se alcanzó el límite de envíos por hora".
-   Configura Resend en *Authentication → Emails → SMTP Settings*: host `smtp.resend.com`,
-   puerto `465`, usuario `resend` y tu API key de Resend como contraseña. Con SMTP propio el
-   límite arranca en 30 por hora; súbelo en *Authentication → Rate Limits*.
+   Verifica `emprendehn.com` en Resend y crea una API key con permiso *Sending access* solo
+   para ese dominio. Luego configura *Authentication → Emails → SMTP Settings*: host
+   `smtp.resend.com`, puerto `465`, usuario `resend`, tu API key como contraseña, remitente
+   `no-reply@emprendehn.com` y nombre `EmprendeHN`. Con SMTP propio el límite arranca en 30
+   por hora; súbelo en *Authentication → Rate Limits*.
 5. *(Recomendado)* **Attack Protection**: activa CAPTCHA (Turnstile o hCaptcha) para frenar
    registros automatizados.
 
