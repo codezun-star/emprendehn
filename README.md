@@ -159,11 +159,28 @@ supabase/templates/       plantillas de correo de Auth
 
 ## Despliegue en Vercel
 
-1. Importa el repositorio y define las 3 variables de entorno. Usa
-   `NEXT_PUBLIC_SITE_URL=https://emprendehn.com` en *Production*.
-2. Agrega el dominio `emprendehn.com` y actualiza *Site URL* y *Redirect URLs* en Supabase.
-3. En los deploys de *Preview*, `robots.txt` bloquea la indexación (no compiten con el
+El build **prerenderiza con datos reales** el inicio, `/categorias` y el sitemap. Por eso
+el orden importa:
+
+1. **Aplica las migraciones 001–009** en tu proyecto de Supabase. Si faltan, el build
+   falla con el aviso "¿Ya aplicaste las migraciones…?".
+2. **Variables de entorno** en *Vercel → Project → Settings → Environment Variables*,
+   marcando **Production** y **Preview**:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+   - `NEXT_PUBLIC_SITE_URL` = `https://emprendehn.com` (solo en Production). Si no la
+     defines, se usa el dominio de producción del proyecto en Vercel y, en los previews,
+     la URL de cada deploy.
+
+   `.env.local` no se sube a GitHub (está en `.gitignore`), así que Vercel no lo ve. Las
+   variables `NEXT_PUBLIC_*` se incrustan al compilar: si las agregas o cambias,
+   **vuelve a desplegar** (*Deployments → ⋯ → Redeploy*).
+3. Agrega el dominio `emprendehn.com` y actualiza *Site URL* y *Redirect URLs* en Supabase.
+4. En los deploys de *Preview*, `robots.txt` bloquea la indexación (no compiten con el
    dominio real en Google).
+
+La versión de Node está fijada en `22.x` (`engines` en `package.json`), la misma con la
+que se probó el proyecto.
 
 ## Cómo se validó
 

@@ -25,6 +25,20 @@ export type ResultadoBusqueda =
 export type ResumenDirectorio =
   Database["public"]["Functions"]["resumen_directorio"]["Returns"][number];
 
+/**
+ * Error legible. Si la tabla o función no existe, casi siempre es que faltan
+ * migraciones en el proyecto de Supabase (el build prerenderiza con datos reales).
+ */
+function errorDeConsulta(contexto: string, error: { message: string; code?: string }): Error {
+  const faltaEsquema = ["PGRST202", "PGRST205", "42P01", "42883"].includes(error.code ?? "");
+  return new Error(
+    `${contexto}: ${error.message}` +
+      (faltaEsquema
+        ? " — ¿Ya aplicaste las migraciones de supabase/migrations (001–009) en este proyecto de Supabase?"
+        : ""),
+  );
+}
+
 export const obtenerCategorias = cache(async () => {
   const { data, error } = await crearClientePublico()
     .from("categories")
@@ -32,7 +46,7 @@ export const obtenerCategorias = cache(async () => {
     .eq("activa", true)
     .order("orden")
     .order("nombre");
-  if (error) throw new Error(`No se pudieron cargar las categorías: ${error.message}`);
+  if (error) throw errorDeConsulta("No se pudieron cargar las categorías", error);
 
   const padres: CategoriaConHijas[] = data
     .filter((c) => c.parent_id === null)
@@ -54,7 +68,7 @@ export const obtenerMunicipios = cache(async () => {
     .from("municipios")
     .select("id, nombre, slug, destacado, departamento_id, departamento:departamentos(nombre, slug)")
     .order("nombre");
-  if (error) throw new Error(`No se pudieron cargar los municipios: ${error.message}`);
+  if (error) throw errorDeConsulta("No se pudieron cargar los municipios", error);
 
   const municipios = data as unknown as Municipio[];
   return {
@@ -70,7 +84,7 @@ export const obtenerDepartamentos = cache(async () => {
     .from("departamentos")
     .select("id, nombre, slug")
     .order("nombre");
-  if (error) throw new Error(`No se pudieron cargar los departamentos: ${error.message}`);
+  if (error) throw errorDeConsulta("No se pudieron cargar los departamentos", error);
   return data;
 });
 
@@ -92,7 +106,7 @@ export const obtenerNegocioPublico = cache(async (slug: string) => {
     .eq("estado", "aprobado")
     .order("orden", { referencedTable: "business_images" })
     .maybeSingle();
-  if (error) throw new Error(`No se pudo cargar el negocio: ${error.message}`);
+  if (error) throw errorDeConsulta("No se pudo cargar el negocio", error);
   return data;
 });
 
@@ -112,7 +126,7 @@ export async function buscarNegocios(params: {
     p_desplazamiento: params.desplazamiento ?? 0,
     p_orden: params.orden ?? "relevancia",
   });
-  if (error) throw new Error(`Error en la búsqueda: ${error.message}`);
+  if (error) throw errorDeConsulta("Error en la búsqueda", error);
   return { negocios: data, total: data[0]?.total ?? 0 };
 }
 
@@ -121,7 +135,7 @@ export const obtenerResumen = cache(async (categoriaSlug?: string) => {
   const { data, error } = await crearClientePublico().rpc("resumen_directorio", {
     p_categoria: categoriaSlug,
   });
-  if (error) throw new Error(`No se pudo cargar el resumen: ${error.message}`);
+  if (error) throw errorDeConsulta("No se pudo cargar el resumen", error);
   return data;
 });
 
@@ -151,7 +165,7 @@ export async function obtenerNegociosParaSitemap() {
       .eq("estado", "aprobado")
       .order("slug")
       .range(desde, desde + pagina - 1);
-    if (error) throw new Error(`No se pudo generar el sitemap: ${error.message}`);
+    if (error) throw errorDeConsulta("No se pudo generar el sitemap", error);
     filas.push(...data);
     if (data.length < pagina) break;
   }
