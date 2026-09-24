@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^22.20.4",
+    "@types/node": "^24.13.6",
     "@types/react": "~19.2",
     "@types/react-dom": "~19.2",
     "eslint": "^9",
@@ -33,6 +33,6 @@
     "typescript": "^5"
   },
   "engines": {
-    "node": "22.x"
+    "node": "24.x"
   }
 }

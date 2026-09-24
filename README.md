@@ -179,7 +179,7 @@ el orden importa:
 4. En los deploys de *Preview*, `robots.txt` bloquea la indexación (no compiten con el
    dominio real en Google).
 
-La versión de Node está fijada en `22.x` (`engines` en `package.json`), la misma con la
+La versión de Node está fijada en `24.x` (`engines` en `package.json`), la misma con la
 que se probó el proyecto.
 
 ## Cómo se validó

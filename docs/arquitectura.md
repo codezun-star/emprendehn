@@ -24,7 +24,7 @@ de canary, beta o releases de menos de ~3 semanas.
 | `react-hook-form` | **7.87.x** | |
 | `@hookform/resolvers` | **5.x** | Soporta Zod 4. |
 
-Node: 22 LTS (Next 16 requiere ≥ 20.9).
+Node: 24 LTS (Next 16 requiere ≥ 20.9).
 
 ### 1.1 Decisión: Tailwind v4 vs v3 → **v4**
 
