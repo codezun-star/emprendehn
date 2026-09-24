@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 
 import { PerfilNegocio } from "@/components/directorio/perfil-negocio";
+import { RastreoNegocio } from "@/components/directorio/rastreo-negocio";
 import { ReportarNegocio } from "@/components/directorio/reportar-negocio";
 import { RejillaNegocios } from "@/components/directorio/tarjeta-negocio";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -11,6 +12,7 @@ import {
   obtenerCategorias,
   obtenerMunicipios,
   obtenerNegocioPublico,
+  obtenerSlugActual,
 } from "@/lib/consultas/directorio";
 import { jsonLdNegocio } from "@/lib/seo";
 import { urlImagen } from "@/lib/storage";
@@ -27,7 +29,12 @@ export async function generateStaticParams() {
 
 const cargarNegocio = cache(async (slug: string) => {
   const negocio = await obtenerNegocioPublico(slug);
-  if (!negocio) notFound();
+  if (!negocio) {
+    // URL anterior de un negocio al que el admin le cambió el slug: 308 permanente.
+    const actual = await obtenerSlugActual(slug);
+    if (actual) permanentRedirect(`/negocio/${actual}`);
+    notFound();
+  }
   const [{ porId: categorias }, { porId: municipios }] = await Promise.all([
     obtenerCategorias(),
     obtenerMunicipios(),
@@ -85,6 +92,7 @@ export default async function PaginaNegocio({ params }: PageProps<"/negocio/[slu
           departamento: ciudad?.departamento.nombre ?? "",
         })}
       />
+      <RastreoNegocio negocioId={negocio.id} />
       <PerfilNegocio
         negocio={negocio}
         categoria={categoria}

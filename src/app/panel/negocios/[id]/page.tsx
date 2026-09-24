@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AvisoPublicado } from "@/components/panel/aviso-publicado";
 import { ZonaPeligro } from "@/components/panel/zona-peligro";
 import { FormularioNegocio } from "@/components/panel/formulario-negocio";
 import { requerirUsuario } from "@/lib/auth";
@@ -19,6 +20,7 @@ export default async function PaginaEditarNegocio({ params }: PageProps<"/panel/
 
   return (
     <div className="space-y-6">
+      {negocio.estado === "aprobado" && <AvisoPublicado />}
       <FormularioNegocio
         negocioId={negocio.id}
         categorias={opciones.categorias}

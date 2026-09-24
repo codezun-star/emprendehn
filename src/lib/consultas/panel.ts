@@ -41,3 +41,70 @@ export const obtenerMiNegocio = cache(async (userId: string, id: string) => {
 });
 
 export type MiNegocio = Awaited<ReturnType<typeof obtenerMiNegocio>>;
+
+// ---------------------------------------------------------------------------
+// Estadísticas (migración 012). Los días se cuentan en hora de Honduras.
+// ---------------------------------------------------------------------------
+
+/** "2026-09-24" de hoy en Honduras, menos `dias` días. */
+function diaHonduras(dias = 0): string {
+  const fecha = new Date(Date.now() - dias * 86_400_000);
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Tegucigalpa" }).format(fecha);
+}
+
+export type TotalesEventos = { visitas: number; whatsapp: number; llamadas: number; mapa: number; redes: number };
+
+const CEROS: TotalesEventos = { visitas: 0, whatsapp: 0, llamadas: 0, mapa: 0, redes: 0 };
+
+function sumar(filas: TotalesEventos[]): TotalesEventos {
+  return filas.reduce(
+    (t, f) => ({
+      visitas: t.visitas + f.visitas,
+      whatsapp: t.whatsapp + f.whatsapp,
+      llamadas: t.llamadas + f.llamadas,
+      mapa: t.mapa + f.mapa,
+      redes: t.redes + f.redes,
+    }),
+    CEROS,
+  );
+}
+
+/** Últimos 30 días (con los días sin datos en cero) y los 30 anteriores, para comparar. */
+export async function obtenerEstadisticas(negocioId: string) {
+  const supabase = await crearClienteServidor();
+  const { data, error } = await supabase
+    .from("business_stats_daily")
+    .select("dia, visitas, whatsapp, llamadas, mapa, redes")
+    .eq("business_id", negocioId)
+    .gte("dia", diaHonduras(59))
+    .order("dia");
+  if (error) throw new Error(`No se pudieron cargar las estadísticas: ${error.message}`);
+
+  const porDia = new Map(data.map((f) => [f.dia, f]));
+  const dias = Array.from({ length: 30 }, (_, i) => {
+    const dia = diaHonduras(29 - i);
+    return { dia, ...(porDia.get(dia) ?? CEROS) };
+  });
+  const inicio = dias[0].dia;
+  return {
+    dias,
+    actual: sumar(dias),
+    anterior: sumar(data.filter((f) => f.dia < inicio)),
+  };
+}
+
+/** Totales de los últimos 30 días por negocio (para la lista de "Mis negocios"). */
+export async function obtenerResumenEstadisticas(negocioIds: string[]) {
+  const resumen = new Map<string, TotalesEventos>();
+  if (negocioIds.length === 0) return resumen;
+  const supabase = await crearClienteServidor();
+  const { data } = await supabase
+    .from("business_stats_daily")
+    .select("business_id, visitas, whatsapp, llamadas, mapa, redes")
+    .in("business_id", negocioIds)
+    .gte("dia", diaHonduras(29));
+  for (const fila of data ?? []) {
+    resumen.set(fila.business_id, sumar([resumen.get(fila.business_id) ?? CEROS, fila]));
+  }
+  return resumen;
+}

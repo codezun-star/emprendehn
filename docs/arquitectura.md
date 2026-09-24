@@ -82,6 +82,7 @@ src/
       negocios/nuevo/page.tsx
       negocios/[id]/page.tsx      # editar datos + horario
       negocios/[id]/galeria/page.tsx
+      negocios/[id]/estadisticas/page.tsx  # visitas y clics de contacto (últimos 30 días)
       cuenta/page.tsx             # datos de la cuenta + eliminar cuenta
     admin/                        # requiere rol admin
       layout.tsx
@@ -90,6 +91,7 @@ src/
       categorias/page.tsx
       reportes/page.tsx           # reportes de visitantes (abiertos / resueltos)
     (publico)/privacidad, terminos, contacto, cuenta-eliminada
+    api/eventos/route.ts          # recibe visitas y clics (sendBeacon) -> registrar_evento
     sitemap.ts
     robots.ts
     layout.tsx  globals.css  not-found.tsx
@@ -221,6 +223,15 @@ penaliza Google.
   contacto): negocio nuevo, negocio que vuelve a revisión, primer cambio sin revisar de
   un negocio publicado y primer reporte abierto de un negocio. Se envían con `after()`,
   así que no hacen esperar al usuario.
+- **Estadísticas** (migración 012): la página pública del negocio monta
+  `RastreoNegocio`, que envía con `sendBeacon` a `/api/eventos` una visita por sesión del
+  navegador y cada clic en los enlaces con `data-evento` (WhatsApp, Llamar, Maps, redes).
+  Solo se guardan totales por negocio y día; la ruta descarta bots por user-agent.
+- **"Abierto ahora"** (migración 013): `esta_abierto()` repite en SQL la regla de
+  `EstadoAbierto` (hora de Honduras, turnos que cruzan la medianoche) para filtrar en
+  `/buscar?abierto=1`.
+- **URLs estables** (migración 014): si el admin cambia el slug, el anterior queda en
+  `business_slug_redirects` y `/negocio/[viejo]` responde 308 hacia el nuevo.
 - **Spam sin fricción** (`lib/antispam.ts`, `components/forms/antispam.tsx`): campo
   trampa invisible y tiempo mínimo en registro, recuperación y reportes; bloqueo de
   correos temporales en el registro. CAPTCHA de Turnstile en modo invisible, apagado
@@ -237,6 +248,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000   # https://emprendehn.com en producc
 RESEND_API_KEY=                               # solo servidor; correos al dueño y al admin
 CORREO_ADMIN=                                 # opcional; por defecto codezun@gmail.com
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=               # opcional; CAPTCHA invisible
+NEXT_PUBLIC_LOGIN_GOOGLE=                     # opcional; "true" muestra el botón de Google
 ```
 
 **No hace falta la service role / secret key en el MVP.** Todo, admin incluido, pasa por

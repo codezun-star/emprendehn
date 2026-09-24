@@ -100,6 +100,40 @@ export async function moderarNegocio(
   return { ok: true, mensaje: `${mensajes[estado]} ${AVISO_CORREO[envio](anterior.dueno.email)}` };
 }
 
+const slugSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(120, "Máximo 120 caracteres")
+  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Solo minúsculas, números y guiones (ej. baleadas-dona-marta)");
+
+/** Admin: cambia la URL del negocio. La anterior redirige a la nueva (migración 014). */
+export async function cambiarSlugNegocio(id: string, slug: string): Promise<ResultadoAccion> {
+  const supabase = await clienteAdmin();
+  if (!supabase) return NO_AUTORIZADO;
+  if (!z.uuid().safeParse(id).success) return { ok: false, error: "Negocio no encontrado." };
+  const parsed = slugSchema.safeParse(slug);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "URL inválida." };
+
+  const anterior = await negocioParaRevalidar(supabase, id);
+  if (!anterior) return { ok: false, error: "Negocio no encontrado." };
+  if (anterior.slug === parsed.data) return { ok: true, mensaje: "La URL no cambió." };
+
+  const { data, error } = await supabase
+    .from("businesses")
+    .update({ slug: parsed.data })
+    .eq("id", id)
+    .select("slug, category_id, municipio_id, estado")
+    .single();
+  if (error) {
+    if (error.code === "23505") return { ok: false, error: "Esa URL ya la usa otro negocio." };
+    return errorDeBaseDeDatos(error);
+  }
+
+  if (data.estado === "aprobado") await revalidarDirectorio(anterior, data);
+  return { ok: true, mensaje: `URL actualizada. /negocio/${anterior.slug} ahora redirige a /negocio/${data.slug}.` };
+}
+
 /** Admin: marca un reporte como resuelto (o lo reabre). */
 export async function resolverReporte(id: string, resuelto: boolean): Promise<ResultadoAccion> {
   const supabase = await clienteAdmin();

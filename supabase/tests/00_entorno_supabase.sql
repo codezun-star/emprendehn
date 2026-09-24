@@ -26,8 +26,13 @@ create table auth.users (
   email text,
   raw_user_meta_data jsonb default '{}'
 );
+-- Como en Supabase: el "sub" del JWT (PostgREST lo deja en request.jwt.claims;
+-- las pruebas SQL usan request.jwt.claim.sub con pruebas.t_como).
 create function auth.uid() returns uuid language sql stable as $$
-  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+  select nullif(coalesce(
+    nullif(current_setting('request.jwt.claim.sub', true), ''),
+    current_setting('request.jwt.claims', true)::jsonb ->> 'sub'
+  ), '')::uuid
 $$;
 
 create table storage.buckets (

@@ -12,6 +12,7 @@ export function PestanasNegocio({ negocioId }: { negocioId: string }) {
     { href: base, etiqueta: "Datos" },
     { href: `${base}/galeria`, etiqueta: "Logo y fotos" },
     { href: `${base}/vista-previa`, etiqueta: "Vista previa" },
+    { href: `${base}/estadisticas`, etiqueta: "Estadísticas" },
   ];
   return (
     <nav aria-label="Secciones del negocio" className="flex gap-1 overflow-x-auto border-b border-brand-dark/10">

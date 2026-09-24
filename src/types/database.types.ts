@@ -15,6 +15,58 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      business_slug_redirects: {
+        Row: { business_id: string; created_at: string; slug: string }
+        Insert: { business_id: string; created_at?: string; slug: string }
+        Update: { business_id?: string; created_at?: string; slug?: string }
+        Relationships: [
+          {
+            foreignKeyName: "business_slug_redirects_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_stats_daily: {
+        Row: {
+          business_id: string
+          dia: string
+          llamadas: number
+          mapa: number
+          redes: number
+          visitas: number
+          whatsapp: number
+        }
+        Insert: {
+          business_id: string
+          dia: string
+          llamadas?: number
+          mapa?: number
+          redes?: number
+          visitas?: number
+          whatsapp?: number
+        }
+        Update: {
+          business_id?: string
+          dia?: string
+          llamadas?: number
+          mapa?: number
+          redes?: number
+          visitas?: number
+          whatsapp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_stats_daily_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_reports: {
         Row: {
           business_id: string
@@ -387,6 +439,7 @@ export type Database = {
           p_ciudad?: string
           p_desplazamiento?: number
           p_limite?: number
+          p_abierto?: boolean
           p_orden?: string
           p_texto?: string
         }
@@ -409,10 +462,12 @@ export type Database = {
       }
       construir_tsquery: { Args: { p_texto: string }; Returns: unknown }
       eliminar_mi_cuenta: { Args: never; Returns: undefined }
+      esta_abierto: { Args: { p_horario: Json; p_momento?: string }; Returns: boolean }
       es_contexto_privilegiado: { Args: never; Returns: boolean }
       es_dueno_negocio: { Args: { p_business_id: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       puedo_eliminar_mi_cuenta: { Args: never; Returns: boolean }
+      registrar_evento: { Args: { p_business_id: string; p_evento: string }; Returns: undefined }
       reportar_negocio: {
         Args: { p_business_id: string; p_motivo: string; p_detalle?: string; p_contacto?: string }
         Returns: boolean
@@ -431,6 +486,7 @@ export type Database = {
           total: number
         }[]
       }
+      slug_actual: { Args: { p_slug: string }; Returns: string }
       slugify: { Args: { texto: string }; Returns: string }
     }
     Enums: {

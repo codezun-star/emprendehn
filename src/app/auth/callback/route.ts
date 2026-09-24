@@ -5,10 +5,9 @@ import { crearClienteServidor } from "@/lib/supabase/server";
 import { rutaSegura } from "@/lib/utils";
 
 /**
- * Intercambio de código PKCE -> sesión. Lo usará el inicio de sesión con
- * Google (OAuth) cuando se active el proveedor en Supabase:
- *   supabase.auth.signInWithOAuth({ provider: "google",
- *     options: { redirectTo: `${SITE_URL}/auth/callback?siguiente=/panel` } })
+ * Intercambio de código PKCE -> sesión para el inicio de sesión con Google
+ * (components/auth/boton-google.tsx). Si la persona cancela en Google, llega
+ * sin código y vuelve a /ingresar con un aviso.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -21,5 +20,5 @@ export async function GET(request: NextRequest) {
     if (!error) redirect(siguiente);
   }
 
-  redirect("/ingresar?error=enlace-invalido");
+  redirect("/ingresar?error=google");
 }

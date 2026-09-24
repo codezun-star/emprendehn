@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { BotonGoogle } from "@/components/auth/boton-google";
 import { FormularioIngreso } from "@/components/auth/formulario-ingreso";
 import { Alerta } from "@/components/ui/alerta";
 
@@ -12,6 +13,7 @@ const MENSAJES: Record<string, string> = {
   "otro-navegador":
     "Abriste el enlace en otro navegador. Si era para confirmar tu cuenta, ya quedó confirmada: inicia sesión aquí abajo. " +
     "Si era para cambiar tu contraseña, pide un enlace nuevo y ábrelo en este mismo navegador.",
+  google: "No pudimos iniciar sesión con Google. Inténtalo de nuevo o ingresa con tu correo.",
 };
 
 export default async function PaginaIngresar({ searchParams }: PageProps<"/ingresar">) {
@@ -25,6 +27,7 @@ export default async function PaginaIngresar({ searchParams }: PageProps<"/ingre
         <p className="text-sm text-ink/70">Administra el perfil de tu negocio.</p>
       </div>
       {mensajeError && <Alerta tono="error">{mensajeError}</Alerta>}
+      <BotonGoogle siguiente={typeof siguiente === "string" ? siguiente : undefined} />
       <FormularioIngreso siguiente={typeof siguiente === "string" ? siguiente : undefined} />
       <p className="text-center text-sm text-ink/70">
         ¿No tienes cuenta? <Link href="/registro" className="font-semibold">Regístrate gratis</Link>

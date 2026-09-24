@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { BotonGoogle } from "@/components/auth/boton-google";
 import { FormularioRegistro } from "@/components/auth/formulario-registro";
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function PaginaRegistro() {
           Es gratis. Después de confirmar tu correo podrás registrar tu negocio.
         </p>
       </div>
+      <BotonGoogle />
       <FormularioRegistro />
       <p className="text-center text-sm text-ink/70">
         ¿Ya tienes cuenta? <Link href="/ingresar" className="font-semibold">Ingresa</Link>

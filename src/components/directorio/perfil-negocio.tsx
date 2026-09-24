@@ -218,6 +218,7 @@ export function PerfilNegocio({
             </address>
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consultaMapa)}`}
+              data-evento="mapa"
               target="_blank"
               rel="noopener"
               className="mt-3 inline-block text-sm font-semibold"
@@ -233,6 +234,7 @@ export function PerfilNegocio({
             {negocio.whatsapp && (
               <a
                 href={enlaceWhatsApp(negocio.whatsapp, mensajeWhatsApp)}
+                data-evento="whatsapp"
                 target="_blank"
                 rel="noopener"
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 font-bold text-ink no-underline hover:brightness-95"
@@ -243,6 +245,7 @@ export function PerfilNegocio({
             {negocio.telefono && (
               <a
                 href={`tel:${negocio.telefono}`}
+                data-evento="llamada"
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-dark px-4 py-3 font-bold text-white no-underline hover:bg-brand"
               >
                 <Phone className="size-5" aria-hidden /> Llamar {formatearTelefono(negocio.telefono)}
@@ -260,7 +263,7 @@ export function PerfilNegocio({
               <ul className="space-y-2 border-t border-brand-dark/10 pt-3 text-sm">
                 {redes.map(([red, url]) => (
                   <li key={red}>
-                    <a href={url} target="_blank" rel="noopener nofollow" className="inline-flex items-center gap-2">
+                    <a href={url} target="_blank" rel="noopener nofollow" data-evento="redes" className="inline-flex items-center gap-2">
                       <Globe className="size-4" aria-hidden /> {NOMBRES_REDES[red]}
                     </a>
                   </li>
@@ -285,6 +288,7 @@ export function PerfilNegocio({
           {negocio.whatsapp && (
             <a
               href={enlaceWhatsApp(negocio.whatsapp, mensajeWhatsApp)}
+              data-evento="whatsapp"
               target="_blank"
               rel="noopener"
               className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-3 py-3 text-sm font-bold text-ink no-underline"
@@ -295,6 +299,7 @@ export function PerfilNegocio({
           {negocio.telefono && (
             <a
               href={`tel:${negocio.telefono}`}
+              data-evento="llamada"
               className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-dark px-3 py-3 text-sm font-bold text-white no-underline"
             >
               <Phone className="size-5" aria-hidden /> Llamar

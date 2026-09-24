@@ -34,7 +34,7 @@ function errorDeConsulta(contexto: string, error: { message: string; code?: stri
   return new Error(
     `${contexto}: ${error.message}` +
       (faltaEsquema
-        ? " — ¿Ya aplicaste las migraciones de supabase/migrations (001–011) en este proyecto de Supabase?"
+        ? " — ¿Ya aplicaste las migraciones de supabase/migrations (001–014) en este proyecto de Supabase?"
         : ""),
   );
 }
@@ -117,6 +117,8 @@ export async function buscarNegocios(params: {
   limite?: number;
   desplazamiento?: number;
   orden?: "relevancia" | "recientes";
+  /** Solo los abiertos en este momento (hora de Honduras). */
+  abierto?: boolean;
 }) {
   const { data, error } = await crearClientePublico().rpc("buscar_negocios", {
     p_texto: params.texto || undefined,
@@ -125,6 +127,7 @@ export async function buscarNegocios(params: {
     p_limite: params.limite ?? 24,
     p_desplazamiento: params.desplazamiento ?? 0,
     p_orden: params.orden ?? "relevancia",
+    p_abierto: params.abierto || undefined,
   });
   if (error) throw errorDeConsulta("Error en la búsqueda", error);
   return { negocios: data, total: data[0]?.total ?? 0 };
@@ -191,4 +194,14 @@ export async function obtenerOpcionesBuscador() {
       todas: todos.map((m) => ({ slug: m.slug, nombre: etiqueta(m) })),
     },
   };
+}
+
+/** Slug vigente de un negocio publicado a partir de uno anterior (migración 014), o null. */
+export async function obtenerSlugActual(slugViejo: string): Promise<string | null> {
+  const { data, error } = await crearClientePublico().rpc("slug_actual", { p_slug: slugViejo });
+  if (error) {
+    console.error("[slug_actual]", error.message);
+    return null;
+  }
+  return data ?? null;
 }

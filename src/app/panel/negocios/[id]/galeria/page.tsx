@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AvisoPublicado } from "@/components/panel/aviso-publicado";
 import { GestorGaleria } from "@/components/panel/gestor-galeria";
 import { Alerta } from "@/components/ui/alerta";
 import { requerirUsuario } from "@/lib/auth";
@@ -20,6 +21,7 @@ export default async function PaginaGaleria({ params, searchParams }: PageProps<
           confianza y más contactos.
         </Alerta>
       )}
+      {negocio.estado === "aprobado" && <AvisoPublicado />}
       <GestorGaleria
         negocioId={negocio.id}
         nombreNegocio={negocio.nombre}

@@ -17,7 +17,7 @@ export function Buscador({
 }: {
   categorias: { nombre: string; hijas: Opcion[]; slug: string }[];
   ciudades: { destacadas: Opcion[]; todas: Opcion[] };
-  valores?: { q?: string; categoria?: string; ciudad?: string };
+  valores?: { q?: string; categoria?: string; ciudad?: string; abierto?: boolean };
   compacto?: boolean;
 }) {
   const control =
@@ -32,6 +32,7 @@ export function Buscador({
         compacto && "bg-transparent p-0",
       )}
     >
+      {valores.abierto && <input type="hidden" name="abierto" value="1" />}
       <label className="sr-only" htmlFor="buscar-q">¿Qué buscas?</label>
       <input
         id="buscar-q"

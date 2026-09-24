@@ -7,7 +7,13 @@ import { Alerta } from "@/components/ui/alerta";
 import { Boton } from "@/components/ui/boton";
 import { Campo, Select, Textarea } from "@/components/ui/campo";
 import type { EstadoNegocio } from "@/components/ui/insignia-estado";
-import { cambiarPlan, eliminarNegocioAdmin, marcarCambiosRevisados, moderarNegocio } from "@/lib/acciones/admin";
+import {
+  cambiarPlan,
+  cambiarSlugNegocio,
+  eliminarNegocioAdmin,
+  marcarCambiosRevisados,
+  moderarNegocio,
+} from "@/lib/acciones/admin";
 
 export function PanelModeracion({
   negocioId,
@@ -17,9 +23,11 @@ export function PanelModeracion({
   planActual,
   planes,
   cambiosPorRevisar,
+  slugActual,
 }: {
   negocioId: string;
   nombre: string;
+  slugActual: string;
   estadoActual: EstadoNegocio;
   motivoActual: string | null;
   planActual: string;
@@ -30,6 +38,7 @@ export function PanelModeracion({
   const router = useRouter();
   const [motivo, setMotivo] = useState(motivoActual ?? "");
   const [plan, setPlan] = useState(planActual);
+  const [slug, setSlug] = useState(slugActual);
   const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null);
   const [errorMotivo, setErrorMotivo] = useState<string | undefined>();
   const [pendiente, iniciar] = useTransition();
@@ -123,6 +132,35 @@ export function PanelModeracion({
               onClick={() => ejecutar(() => cambiarPlan(negocioId, { plan }))}
             >
               Guardar
+            </Boton>
+          </div>
+        </Campo>
+      </div>
+
+      <div className="space-y-2 border-t border-brand-dark/10 pt-5">
+        <Campo
+          etiqueta="URL del negocio"
+          htmlFor="slug"
+          ayuda="Si la cambias, la URL anterior redirige a la nueva y no se pierde el posicionamiento en Google."
+        >
+          <div className="flex gap-2">
+            <div className="flex min-w-0 flex-1 items-center rounded-lg border border-brand-dark/20 bg-white pl-3 text-sm focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/30">
+              <span className="shrink-0 text-ink/50">/negocio/</span>
+              <input
+                id="slug"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value.toLowerCase())}
+                className="min-w-0 flex-1 bg-transparent py-2.5 pr-3 focus:outline-none"
+                maxLength={120}
+                autoComplete="off"
+              />
+            </div>
+            <Boton
+              variante="secundario"
+              disabled={pendiente || slug.trim() === slugActual}
+              onClick={() => ejecutar(() => cambiarSlugNegocio(negocioId, slug))}
+            >
+              Cambiar
             </Boton>
           </div>
         </Campo>

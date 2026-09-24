@@ -30,13 +30,6 @@ export default async function LayoutNegocio({ children, params }: LayoutProps<"/
           </p>
         </Alerta>
       )}
-      {negocio.estado === "aprobado" && (
-        <Alerta tono="info">
-          Tu negocio está publicado: lo que guardes se verá al instante. Si cambias el nombre, la
-          descripción, la categoría, la ciudad, el logo o las redes, o agregas fotos, el equipo de
-          EmprendeHN lo revisará después.
-        </Alerta>
-      )}
       {children}
     </div>
   );

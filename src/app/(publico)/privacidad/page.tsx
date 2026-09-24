@@ -26,6 +26,8 @@ export default function PaginaPrivacidad() {
       <p>
         <strong>Si creas una cuenta:</strong> tu nombre, tu correo electrónico y tu contraseña. La
         contraseña se guarda cifrada: nadie, ni siquiera nosotros, puede leerla.
+        {process.env.NEXT_PUBLIC_LOGIN_GOOGLE === "true" &&
+          " Si entras con Google, recibimos de tu cuenta de Google solo tu nombre, tu correo y tu foto de perfil; no vemos tu contraseña de Google."}
       </p>
       <p>
         <strong>Si registras un negocio:</strong> los datos que escribes en su perfil (nombre,
@@ -42,6 +44,11 @@ export default function PaginaPrivacidad() {
         <strong>Datos técnicos:</strong> como cualquier sitio web, nuestros proveedores registran datos
         como la dirección IP, el tipo de navegador y la fecha de cada visita, para operar el servicio y
         protegerlo de abusos.
+      </p>
+      <p>
+        <strong>Estadísticas para los negocios:</strong> contamos cuántas veces se visita la página de
+        cada negocio y cuántas veces se tocan sus botones de WhatsApp, llamada, mapa y redes. Solo
+        guardamos esos totales por día; no guardamos quién visitó ni datos que te identifiquen.
       </p>
 
       <h2>2. Para qué los usamos</h2>
@@ -68,6 +75,11 @@ export default function PaginaPrivacidad() {
         <li><strong>Supabase:</strong> base de datos, cuentas de usuario y almacenamiento de fotos.</li>
         <li><strong>Vercel:</strong> alojamiento del sitio web.</li>
         <li><strong>Resend:</strong> envío de los correos del servicio.</li>
+        {process.env.NEXT_PUBLIC_LOGIN_GOOGLE === "true" && (
+          <li>
+            <strong>Google:</strong> inicio de sesión con tu cuenta de Google, solo si eliges esa opción.
+          </li>
+        )}
         {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
           <li>
             <strong>Cloudflare Turnstile:</strong> verificación contra bots en los formularios de
@@ -85,7 +97,9 @@ export default function PaginaPrivacidad() {
       <h2>4. Cookies</h2>
       <p>
         Usamos únicamente las cookies necesarias para mantener tu sesión iniciada. Sin ellas no podrías
-        entrar a tu panel. No usamos cookies de publicidad ni de análisis de terceros.
+        entrar a tu panel. No usamos cookies de publicidad ni de análisis de terceros. Para no contar dos
+        veces tu visita a un negocio, tu navegador guarda una marca temporal (sessionStorage) que se borra
+        al cerrar la pestaña.
       </p>
 
       <h2>5. Tus derechos</h2>

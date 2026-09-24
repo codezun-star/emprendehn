@@ -40,6 +40,7 @@ cp .env.example .env.local   # completar URL y publishable key de Supabase
 | `RESEND_API_KEY` | Opcional en desarrollo. API key de Resend para los correos propios (avisos al dueño y al admin); sin ella todo funciona, pero no se envían |
 | `CORREO_ADMIN` | Opcional. Adónde llegan los avisos al admin (varios separados por coma). Por defecto, `codezun@gmail.com` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Opcional. Activa el CAPTCHA invisible (ver "Protección contra spam") |
+| `NEXT_PUBLIC_LOGIN_GOOGLE` | Opcional. `true` muestra "Continuar con Google" (ver "Iniciar sesión con Google") |
 
 No se necesita la service role key: todo, incluido el panel de admin, pasa por RLS.
 
@@ -61,6 +62,9 @@ ejecutar sin romper nada.
 | 009 | `funciones_directorio` | RPC `buscar_negocios` y `resumen_directorio` |
 | 010 | `revision_de_cambios` | Revisión posterior de cambios en negocios publicados; los suspendidos vuelven a revisión al corregirse |
 | 011 | `reportes_y_cuenta` | Reportes de negocios (`business_reports` + `reportar_negocio`) y `eliminar_mi_cuenta` |
+| 012 | `estadisticas` | Visitas y clics de contacto por negocio y día (`business_stats_daily` + `registrar_evento`) |
+| 013 | `abierto_ahora` | `esta_abierto()` y filtro `p_abierto` en `buscar_negocios` |
+| 014 | `redirecciones_slug` | Redirección 308 de las URLs anteriores cuando el admin cambia el slug |
 
 ### 3. Configuración de Supabase Auth (dashboard)
 
@@ -93,6 +97,21 @@ ejecutar sin romper nada.
    3. Después, en Supabase → *Authentication → Attack Protection*, activa CAPTCHA con
       Turnstile y pega la *secret key*. En ese orden: si lo activas antes del paso 2, nadie
       podrá registrarse ni iniciar sesión.
+
+### Iniciar sesión con Google (opcional)
+
+1. En [Google Cloud Console](https://console.cloud.google.com/) crea un proyecto y configura la
+   **pantalla de consentimiento de OAuth** (externa): nombre `EmprendeHN`, correo de soporte
+   `codezun@gmail.com`, dominio `emprendehn.com`, política de privacidad
+   `https://emprendehn.com/privacidad` y términos `https://emprendehn.com/terminos`.
+2. En *Credenciales → Crear credenciales → ID de cliente de OAuth* (tipo *Aplicación web*),
+   agrega como URI de redireccionamiento autorizado
+   `https://<project-ref>.supabase.co/auth/v1/callback`.
+3. En Supabase → *Authentication → Sign In / Providers → Google*, actívalo y pega el
+   *Client ID* y el *Client Secret*.
+4. En Vercel agrega `NEXT_PUBLIC_LOGIN_GOOGLE` = `true` y vuelve a desplegar. Aparecerá
+   "Continuar con Google" en `/ingresar` y `/registro` (la vuelta pasa por `/auth/callback`,
+   ya cubierta por la Redirect URL `https://emprendehn.com/**`).
 
 ### 4. Primer administrador
 
@@ -181,7 +200,7 @@ supabase/templates/       plantillas de correo de Auth
 El build **prerenderiza con datos reales** el inicio, `/categorias` y el sitemap. Por eso
 el orden importa:
 
-1. **Aplica las migraciones 001–011** en tu proyecto de Supabase. Si faltan, el build
+1. **Aplica las migraciones 001–014** en tu proyecto de Supabase. Si faltan, el build
    falla con el aviso "¿Ya aplicaste las migraciones…?".
 2. **Variables de entorno** en *Vercel → Project → Settings → Environment Variables*,
    marcando **Production** y **Preview**:

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { LOGIN_GOOGLE_ACTIVO } from "@/components/auth/boton-google";
 import { useAntispam } from "@/components/forms/antispam";
 import { aplicarErroresServidor } from "@/components/forms/errores";
 import { InputContrasena } from "@/components/forms/input-contrasena";
@@ -108,7 +109,8 @@ export function FormularioRegistro() {
         Crear mi cuenta gratis
       </Boton>
       <p className="text-center text-xs text-ink/60">
-        Al crear tu cuenta aceptas los <Link href="/terminos">Términos y condiciones</Link> y la{" "}
+        Al crear tu cuenta{LOGIN_GOOGLE_ACTIVO && " (también con Google)"} aceptas los{" "}
+        <Link href="/terminos">Términos y condiciones</Link> y la{" "}
         <Link href="/privacidad">Política de privacidad</Link>.
       </p>
     </form>

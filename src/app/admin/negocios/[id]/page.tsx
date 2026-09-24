@@ -56,6 +56,7 @@ export default async function PaginaRevisarNegocio({ params }: PageProps<"/admin
             motivoActual={negocio.motivo_estado}
             planActual={negocio.plan}
             planes={planes}
+            slugActual={negocio.slug}
             cambiosPorRevisar={
               hayCambios
                 ? {

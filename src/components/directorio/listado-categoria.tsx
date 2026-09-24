@@ -2,6 +2,7 @@ import { MapPin } from "lucide-react";
 import Link from "next/link";
 
 import { Migas } from "@/components/directorio/migas";
+import { FiltroAbierto } from "@/components/directorio/filtro-abierto";
 import { RejillaNegocios } from "@/components/directorio/tarjeta-negocio";
 import { JsonLd } from "@/components/seo/json-ld";
 import { BotonEnlace } from "@/components/ui/boton";
@@ -58,9 +59,12 @@ export function ListadoCategoria({
               `Encuentra ${categoria.nombre.toLowerCase()} en todo Honduras. Mira fotos, horarios y ubicación, y contáctalos directo por WhatsApp.`)}
         </p>
         {total > 0 && (
-          <p className="text-sm font-semibold text-brand">
-            {total} {total === 1 ? "negocio" : "negocios"}
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm font-semibold text-brand">
+              {total} {total === 1 ? "negocio" : "negocios"}
+            </p>
+            <FiltroAbierto href={`${busquedaCompleta}&abierto=1`} activo={false} />
+          </div>
         )}
       </div>
 

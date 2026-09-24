@@ -1,4 +1,4 @@
-import { ExternalLink, Images, Pencil, Plus, Store } from "lucide-react";
+import { BarChart3, ExternalLink, Images, Pencil, Plus, Store } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { InsigniaEstado, InsigniaPlan } from "@/components/ui/insignia-estado";
 import { requerirUsuario } from "@/lib/auth";
 import { MAX_NEGOCIOS_POR_CUENTA } from "@/lib/constantes";
 import { obtenerCategorias, obtenerMunicipios } from "@/lib/consultas/directorio";
-import { obtenerMisNegocios } from "@/lib/consultas/panel";
+import { obtenerMisNegocios, obtenerResumenEstadisticas } from "@/lib/consultas/panel";
 import { urlImagen } from "@/lib/storage";
 
 export const metadata: Metadata = { title: "Mis negocios" };
@@ -28,6 +28,7 @@ export default async function PaginaPanel({ searchParams }: PageProps<"/panel">)
     obtenerCategorias(),
     obtenerMunicipios(),
   ]);
+  const estadisticas = await obtenerResumenEstadisticas(negocios.filter((n) => n.estado === "aprobado").map((n) => n.id));
   const mensaje = typeof aviso === "string" ? AVISOS[aviso] : undefined;
   const nombre = sesion.perfil?.nombre_completo?.split(" ")[0];
 
@@ -66,6 +67,7 @@ export default async function PaginaPanel({ searchParams }: PageProps<"/panel">)
           {negocios.map((n) => {
             const categoria = categorias.get(n.category_id);
             const ciudad = municipios.get(n.municipio_id);
+            const stats = estadisticas.get(n.id);
             return (
               <li key={n.id} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-brand-dark/10">
                 <div className="flex gap-4">
@@ -109,6 +111,11 @@ export default async function PaginaPanel({ searchParams }: PageProps<"/panel">)
                       <Link href={`/negocio/${n.slug}`} className="font-semibold break-all">
                         emprendehn.com/negocio/{n.slug}
                       </Link>
+                      <p className="mt-1">
+                        Últimos 30 días: <strong>{(stats?.visitas ?? 0).toLocaleString("es-HN")}</strong> visitas ·{" "}
+                        <strong>{((stats?.whatsapp ?? 0) + (stats?.llamadas ?? 0)).toLocaleString("es-HN")}</strong> clics en
+                        WhatsApp o Llamar
+                      </p>
                     </Alerta>
                   )}
                 </div>
@@ -119,6 +126,9 @@ export default async function PaginaPanel({ searchParams }: PageProps<"/panel">)
                   </BotonEnlace>
                   <BotonEnlace href={`/panel/negocios/${n.id}/galeria`} variante="secundario" tamano="sm">
                     <Images className="size-4" aria-hidden /> Fotos ({n.totalImagenes})
+                  </BotonEnlace>
+                  <BotonEnlace href={`/panel/negocios/${n.id}/estadisticas`} variante="secundario" tamano="sm">
+                    <BarChart3 className="size-4" aria-hidden /> Estadísticas
                   </BotonEnlace>
                   <BotonEnlace
                     href={n.estado === "aprobado" ? `/negocio/${n.slug}` : `/panel/negocios/${n.id}/vista-previa`}
