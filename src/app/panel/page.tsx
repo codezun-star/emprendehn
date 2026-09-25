@@ -14,16 +14,9 @@ import { urlImagen } from "@/lib/storage";
 
 export const metadata: Metadata = { title: "Mis negocios" };
 
-const AVISOS: Record<string, { tono: "exito" | "info"; texto: string }> = {
-  "cuenta-confirmada": { tono: "exito", texto: "¡Tu cuenta está confirmada! Ya puedes registrar tu negocio." },
-  "contrasena-actualizada": { tono: "exito", texto: "Tu contraseña se actualizó correctamente." },
-  "negocio-eliminado": { tono: "info", texto: "El negocio fue eliminado." },
-};
-
-export default async function PaginaPanel({ searchParams }: PageProps<"/panel">) {
+export default async function PaginaPanel() {
   const sesion = await requerirUsuario("/panel");
-  const [{ aviso }, negocios, { porId: categorias }, { porId: municipios }] = await Promise.all([
-    searchParams,
+  const [negocios, { porId: categorias }, { porId: municipios }] = await Promise.all([
     obtenerMisNegocios(sesion.userId),
     obtenerCategorias(),
     obtenerMunicipios(),
@@ -33,13 +26,10 @@ export default async function PaginaPanel({ searchParams }: PageProps<"/panel">)
     obtenerResumenEstadisticas(publicados),
     contarResenasSinResponder(publicados),
   ]);
-  const mensaje = typeof aviso === "string" ? AVISOS[aviso] : undefined;
   const nombre = sesion.perfil?.nombre_completo?.split(" ")[0];
 
   return (
     <div className="space-y-6">
-      {mensaje && <Alerta tono={mensaje.tono}>{mensaje.texto}</Alerta>}
-
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-brand-dark">

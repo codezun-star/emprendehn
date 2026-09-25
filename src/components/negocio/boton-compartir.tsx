@@ -3,6 +3,7 @@
 import { Check, Share2 } from "lucide-react";
 import { useState } from "react";
 
+import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 /** Menú nativo de compartir en el celular; en la computadora, copia el enlace. */
@@ -20,6 +21,7 @@ export function BotonCompartir({ titulo, url, className }: { titulo: string; url
     }
     try {
       await navigator.clipboard.writeText(url);
+      toast.exito("Enlace copiado", { descripcion: "Pégalo en WhatsApp, Facebook o donde quieras compartirlo." });
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2500);
     } catch {

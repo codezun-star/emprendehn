@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { obtenerSesion } from "@/lib/auth";
+import { conAviso } from "@/lib/avisos";
 import { enviarCorreo, type ResultadoEnvio } from "@/lib/correos/enviar";
 import { correoDeModeracion } from "@/lib/correos/moderacion";
 import { revalidarCategorias, revalidarDirectorio } from "@/lib/revalidacion";
@@ -233,7 +234,7 @@ export async function eliminarNegocioAdmin(id: string): Promise<ResultadoAccion>
   if (error) return errorDeBaseDeDatos(error);
 
   if (negocio.estado === "aprobado") await revalidarDirectorio(negocio);
-  redirect("/admin?aviso=negocio-eliminado");
+  redirect(conAviso("/admin", "negocio-eliminado"));
 }
 
 export async function guardarCategoria(id: string | null, input: CategoriaInput): Promise<ResultadoAccion> {
@@ -262,7 +263,7 @@ export async function guardarCategoria(id: string | null, input: CategoriaInput)
   }
 
   revalidarCategorias();
-  redirect("/admin/categorias?aviso=guardada");
+  redirect(conAviso("/admin/categorias", "categoria-guardada"));
 }
 
 export async function eliminarCategoria(id: string): Promise<ResultadoAccion> {
@@ -283,5 +284,5 @@ export async function eliminarCategoria(id: string): Promise<ResultadoAccion> {
   }
 
   revalidarCategorias();
-  redirect("/admin/categorias?aviso=eliminada");
+  redirect(conAviso("/admin/categorias", "categoria-eliminada"));
 }

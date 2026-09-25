@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { Boton } from "@/components/ui/boton";
 import { Campo, Select, Textarea } from "@/components/ui/campo";
+import { toast } from "@/components/ui/toast";
 import type { EstadoNegocio } from "@/components/ui/insignia-estado";
 import {
   cambiarPlan,
@@ -39,22 +40,23 @@ export function PanelModeracion({
   const [motivo, setMotivo] = useState(motivoActual ?? "");
   const [plan, setPlan] = useState(planActual);
   const [slug, setSlug] = useState(slugActual);
-  const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [errorMotivo, setErrorMotivo] = useState<string | undefined>();
   const [pendiente, iniciar] = useTransition();
 
   function ejecutar(accion: () => Promise<{ ok: boolean; error?: string; mensaje?: string; campos?: Record<string, string> } | undefined>) {
-    setResultado(null);
+    setError(null);
     setErrorMotivo(undefined);
     iniciar(async () => {
       const r = await accion();
       if (!r) return;
       if (r.ok) {
-        setResultado({ ok: true, texto: r.mensaje ?? "Listo." });
+        // El mensaje puede traer si el correo al dueño salió: se deja más tiempo.
+        toast.exito(r.mensaje ?? "Listo", { duracion: 8000 });
         router.refresh();
       } else {
         setErrorMotivo(r.campos?.motivo);
-        setResultado({ ok: false, texto: r.error ?? "Ocurrió un error." });
+        setError(r.error ?? "Ocurrió un error.");
       }
     });
   }
@@ -64,7 +66,7 @@ export function PanelModeracion({
   return (
     <div className="space-y-5 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-brand-dark/10">
       <h2 className="text-lg font-bold text-brand-dark">Moderación</h2>
-      {resultado && <Alerta tono={resultado.ok ? "exito" : "error"}>{resultado.texto}</Alerta>}
+      {error && <Alerta tono="error">{error}</Alerta>}
 
       {cambiosPorRevisar && (
         <Alerta tono="aviso" titulo="Cambios publicados sin revisar">

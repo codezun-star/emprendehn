@@ -6,6 +6,7 @@ import { after } from "next/server";
 import { z } from "zod";
 
 import { obtenerSesion } from "@/lib/auth";
+import { conAviso } from "@/lib/avisos";
 import { enviarCorreo } from "@/lib/correos/enviar";
 import { correoDosPasosActivada } from "@/lib/correos/seguridad";
 import { destinoAdmin } from "@/lib/dos-pasos";
@@ -120,5 +121,5 @@ export async function verificarCodigo(input: z.input<typeof codigoSchema>): Prom
 export async function cerrarSesionEnTodos(): Promise<void> {
   const supabase = await crearClienteServidor();
   await supabase.auth.signOut({ scope: "global" });
-  redirect("/ingresar?aviso=sesiones-cerradas");
+  redirect(conAviso("/ingresar", "sesiones-cerradas"));
 }

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Alerta } from "@/components/ui/alerta";
 import { BotonEnlace } from "@/components/ui/boton";
 import { Paginacion } from "@/components/ui/paginacion";
 import { ETIQUETAS_ESTADO, InsigniaEstado, InsigniaPlan } from "@/components/ui/insignia-estado";
@@ -40,8 +39,6 @@ export default async function PaginaAdmin({ searchParams }: PageProps<"/admin">)
 
   return (
     <div className="space-y-6">
-      {texto(sp.aviso) === "negocio-eliminado" && <Alerta tono="info">El negocio fue eliminado.</Alerta>}
-
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="text-2xl font-bold text-brand-dark">Negocios</h1>
         <form className="flex gap-2" action="/admin">

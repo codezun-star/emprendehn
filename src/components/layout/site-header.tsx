@@ -2,12 +2,13 @@ import Link from "next/link";
 
 import { BotonEnlace } from "@/components/ui/boton";
 
+import { EncabezadoInteligente } from "./encabezado-inteligente";
 import { EnlaceSesion } from "./enlace-sesion";
 import { Logo } from "./logo";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-brand-dark/10 bg-white/95 backdrop-blur">
+    <EncabezadoInteligente className="sticky top-0 z-30 border-b border-brand-dark/10 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <Logo />
         <nav aria-label="Principal" className="flex items-center gap-4 sm:gap-6">
@@ -30,6 +31,6 @@ export function SiteHeader() {
           </BotonEnlace>
         </nav>
       </div>
-    </header>
+    </EncabezadoInteligente>
   );
 }

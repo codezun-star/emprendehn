@@ -326,6 +326,24 @@ penaliza Google.
 - Tendrás que ajustar las plantillas de email en el dashboard. Te daré el texto exacto
   cuando lleguemos a ese paso.
 
+- **Toasts** (`components/ui/toast.tsx`, sin dependencias): store en el módulo +
+  `<Toaster />` en el layout raíz (región `aria-live`; errores con `role="alert"`).
+  Arriba al centro en el celular, abajo a la derecha en la computadora. Se cierran solos
+  (5 s, errores 8 s), pausan con el mouse/foco/pestaña oculta, se descartan deslizando y
+  como máximo se ven 3. `toast.cargando` + `{ id }` convierte un progreso en el resultado
+  (subida de fotos). Los mensajes de las server actions ("Título. Detalle.") se dividen
+  solos en título y descripción. Tras una redirección: `conAviso(ruta, clave)`
+  (`lib/avisos.ts`); `AvisoUrl` lo muestra y lo quita de la URL con
+  `history.replaceState` (sin volver a pedir la página).
+- **Scroll**: `scroll-behavior: smooth` solo para anclas (con `data-scroll-behavior` en
+  `<html>`, Next no anima los cambios de página) y `scroll-padding-top` para no quedar bajo
+  el encabezado fijo. `lib/desplazamiento.ts`: `irAlPrimerError` (formularios largos),
+  `centrarEnFila` (pestañas del panel en el celular). `EncabezadoInteligente` esconde el
+  encabezado al bajar; `BarraNegocio` marca la sección en vista (IntersectionObserver);
+  `VolverArriba` aparece al subir o al llegar al final. Las barras fijas abajo llevan
+  `data-barra-inferior` y fijan `--espacio-inferior` para lo flotante. Con *reducir
+  movimiento* no hay scroll suave ni animaciones.
+
 ### 2.7 Variables de entorno
 
 ```

@@ -215,7 +215,10 @@ export function PaginaNegocio({
       : null;
 
   return (
-    <div className={cn("relative bg-white text-ink", publico && contactoPrincipal && "pb-20 md:pb-0")}>
+    <div
+      data-pagina-negocio={publico || undefined}
+      className={cn("relative bg-white text-ink", publico && contactoPrincipal && "pb-20 md:pb-0")}
+    >
       <BarraNegocio nombre={negocio.nombre} logo={logo} secciones={secciones} contacto={contactoPrincipal} fija={publico} />
 
       <Principal id={publico ? "contenido" : undefined} className="@container">
@@ -327,7 +330,7 @@ export function PaginaNegocio({
         )}
 
         {/* Sobre nosotros */}
-        <section id="sobre" aria-labelledby="titulo-sobre" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-16 @3xl:py-24">
+        <section id="sobre" aria-labelledby="titulo-sobre" className="mx-auto max-w-6xl px-5 py-16 @3xl:py-24">
           <div className="max-w-3xl">
             <Encabezado antetitulo="Sobre nosotros" titulo={`Conoce ${negocio.nombre}`} id="titulo-sobre" />
             <p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-ink/80">{negocio.descripcion}</p>
@@ -336,7 +339,7 @@ export function PaginaNegocio({
 
         {/* Fotos (con una sola, ya es la portada) */}
         {fotos.length > 1 && (
-          <section id="fotos" aria-labelledby="titulo-fotos" className="scroll-mt-16 bg-brand-light py-16 @3xl:py-24">
+          <section id="fotos" aria-labelledby="titulo-fotos" className="bg-brand-light py-16 @3xl:py-24">
             <div className="mx-auto max-w-6xl space-y-8 px-5">
               <Encabezado antetitulo="Galería" titulo="Nuestras fotos" id="titulo-fotos" />
               <GaleriaNegocio fotos={fotos} />
@@ -353,7 +356,7 @@ export function PaginaNegocio({
           )}
         >
           {horario && (
-            <div id="horario" className="scroll-mt-20">
+            <div id="horario" className="scroll-mt-4">
               <Encabezado antetitulo="Horario" titulo="Horario de atención" />
               <div className="mt-6 overflow-hidden rounded-2xl ring-1 ring-ink/10">
                 <TablaHorario horario={horario} />
@@ -362,7 +365,7 @@ export function PaginaNegocio({
             </div>
           )}
 
-          <div id="ubicacion" className="min-w-0 scroll-mt-20">
+          <div id="ubicacion" className="min-w-0 scroll-mt-4">
             <Encabezado antetitulo="Ubicación" titulo="Cómo llegar" />
             <address className="mt-4 not-italic text-ink/80">
               {negocio.direccion && <p className="font-medium text-ink">{negocio.direccion}</p>}
@@ -436,7 +439,7 @@ export function PaginaNegocio({
         )}
 
         {/* Contacto: único lugar con todos los datos de contacto (la dirección está en Ubicación) */}
-        <section id="contacto" aria-labelledby="titulo-contacto" className="scroll-mt-16 bg-brand-dark text-white">
+        <section id="contacto" aria-labelledby="titulo-contacto" className="bg-brand-dark text-white">
           <div className="mx-auto max-w-6xl px-5 py-16 @3xl:py-20">
             <div className="grid gap-8 @4xl:grid-cols-[minmax(0,1fr)_auto] @4xl:items-end">
               <div>
@@ -558,7 +561,10 @@ export function PaginaNegocio({
 
       {/* Contacto siempre a mano en el celular */}
       {publico && contactoPrincipal && (
-        <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-ink/10 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
+        <div
+          data-barra-inferior
+          className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-ink/10 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden"
+        >
           {whatsapp && (
             <a
               href={whatsapp}

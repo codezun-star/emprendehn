@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Flag, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
 
 import { useAntispam } from "@/components/forms/antispam";
@@ -10,6 +10,7 @@ import { aplicarErroresServidor } from "@/components/forms/errores";
 import { Alerta } from "@/components/ui/alerta";
 import { Boton } from "@/components/ui/boton";
 import { ariaCampo, Campo, Input, Textarea } from "@/components/ui/campo";
+import { toast } from "@/components/ui/toast";
 import { reportarNegocio } from "@/lib/acciones/reportes";
 import {
   ETIQUETAS_MOTIVO_REPORTE,
@@ -20,7 +21,6 @@ import {
 
 export function ReportarNegocio({ negocioId, nombre }: { negocioId: string; nombre: string }) {
   const dialogo = useRef<HTMLDialogElement>(null);
-  const [gracias, setGracias] = useState<string | null>(null);
   const antispam = useAntispam();
   const form = useForm<ReporteInput>({
     resolver: zodResolver(reporteSchema),
@@ -31,15 +31,18 @@ export function ReportarNegocio({ negocioId, nombre }: { negocioId: string; nomb
     formState: { errors, isSubmitting },
   } = form;
 
-  const onSubmit = form.handleSubmit(async () => {
-    const resultado = await reportarNegocio(negocioId, form.getValues(), await antispam.obtener());
-    if (resultado.ok) {
-      setGracias(resultado.mensaje ?? "Gracias por avisarnos.");
-      form.reset();
-    } else {
-      aplicarErroresServidor(form, resultado);
-    }
-  });
+  const onSubmit = (evento: FormEvent<HTMLFormElement>) =>
+    form.handleSubmit(async () => {
+      const resultado = await reportarNegocio(negocioId, form.getValues(), await antispam.obtener());
+      if (resultado.ok) {
+        // Se cierra el diálogo y el agradecimiento queda en un toast.
+        dialogo.current?.close();
+        toast.exito(resultado.mensaje ?? "Gracias por avisarnos");
+        form.reset();
+      } else {
+        aplicarErroresServidor(form, resultado);
+      }
+    })(evento);
 
   return (
     <>
@@ -55,7 +58,6 @@ export function ReportarNegocio({ negocioId, nombre }: { negocioId: string; nomb
         ref={dialogo}
         aria-labelledby="titulo-reporte"
         className="m-auto w-[min(32rem,calc(100%-2rem))] rounded-2xl bg-white p-0 text-ink shadow-xl backdrop:bg-ink/50"
-        onClose={() => setGracias(null)}
       >
         <div className="flex items-start justify-between gap-4 border-b border-brand-dark/10 px-5 py-4">
           <div>
@@ -74,64 +76,55 @@ export function ReportarNegocio({ negocioId, nombre }: { negocioId: string; nomb
           </button>
         </div>
 
-        {gracias ? (
-          <div className="space-y-4 p-5">
-            <Alerta tono="exito">{gracias}</Alerta>
-            <Boton variante="secundario" className="w-full" onClick={() => dialogo.current?.close()}>
-              Cerrar
-            </Boton>
-          </div>
-        ) : (
-          <form onSubmit={onSubmit} noValidate className="relative space-y-4 p-5">
-            {errors.root?.servidor && <Alerta tono="error">{errors.root.servidor.message}</Alerta>}
-            {antispam.campos}
+        <form onSubmit={onSubmit} noValidate className="relative space-y-4 p-5">
+          {errors.root?.servidor && <Alerta tono="error">{errors.root.servidor.message}</Alerta>}
+          {antispam.campos}
 
-            <fieldset className="space-y-2">
-              <legend className="mb-1 text-sm font-medium text-brand-dark">¿Qué problema encontraste?</legend>
-              {MOTIVOS_REPORTE.map((m) => (
-                <label key={m} className="flex cursor-pointer items-start gap-2 text-sm">
-                  <input type="radio" value={m} {...register("motivo")} className="mt-0.5 accent-brand" />
-                  {ETIQUETAS_MOTIVO_REPORTE[m]}
-                </label>
-              ))}
-              {errors.motivo && (
-                <p role="alert" className="text-xs font-medium text-red-700">
-                  {errors.motivo.message}
-                </p>
-              )}
-            </fieldset>
+          <fieldset className="space-y-2">
+            <legend className="mb-1 text-sm font-medium text-brand-dark">¿Qué problema encontraste?</legend>
+            {MOTIVOS_REPORTE.map((m) => (
+              <label key={m} className="flex cursor-pointer items-start gap-2 text-sm">
+                <input type="radio" value={m} {...register("motivo")} className="mt-0.5 accent-brand" />
+                {ETIQUETAS_MOTIVO_REPORTE[m]}
+              </label>
+            ))}
+            {errors.motivo && (
+              <p role="alert" className="text-xs font-medium text-red-700">
+                {errors.motivo.message}
+              </p>
+            )}
+          </fieldset>
 
-            <Campo etiqueta="Cuéntanos más" htmlFor="reporte-detalle" opcional error={errors.detalle?.message}>
-              <Textarea
-                {...ariaCampo("reporte-detalle", errors.detalle?.message)}
-                rows={3}
-                className="min-h-0"
-                maxLength={1000}
-                {...register("detalle")}
-              />
-            </Campo>
+          <Campo etiqueta="Cuéntanos más" htmlFor="reporte-detalle" opcional error={errors.detalle?.message}>
+            <Textarea
+              {...ariaCampo("reporte-detalle", errors.detalle?.message)}
+              rows={3}
+              className="min-h-0"
+              maxLength={1000}
+              {...register("detalle")}
+            />
+          </Campo>
 
-            <Campo
-              etiqueta="Tu correo"
-              htmlFor="reporte-contacto"
-              opcional
-              error={errors.contacto?.message}
-              ayuda="Solo por si necesitamos más datos. No se lo mostramos al negocio."
-            >
-              <Input
-                {...ariaCampo("reporte-contacto", errors.contacto?.message)}
-                type="email"
-                autoComplete="email"
-                inputMode="email"
-                {...register("contacto")}
-              />
-            </Campo>
+          <Campo
+            etiqueta="Tu correo"
+            htmlFor="reporte-contacto"
+            opcional
+            error={errors.contacto?.message}
+            ayuda="Solo por si necesitamos más datos. No se lo mostramos al negocio."
+          >
+            <Input
+              {...ariaCampo("reporte-contacto", errors.contacto?.message)}
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              {...register("contacto")}
+            />
+          </Campo>
 
-            <Boton type="submit" cargando={isSubmitting} className="w-full">
-              Enviar reporte
-            </Boton>
-          </form>
-        )}
+          <Boton type="submit" cargando={isSubmitting} className="w-full">
+            Enviar reporte
+          </Boton>
+        </form>
       </dialog>
     </>
   );

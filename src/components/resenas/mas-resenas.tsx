@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Boton } from "@/components/ui/boton";
 import { RESENAS_POR_PAGINA } from "@/lib/constantes";
@@ -20,6 +20,20 @@ export function MasResenas({ negocioId, cargadas, total }: { negocioId: string; 
   const [error, setError] = useState(false);
   const [agotadas, setAgotadas] = useState(false);
   const mostradas = cargadas + extra.length;
+  const lista = useRef<HTMLUListElement>(null);
+  const primeraNueva = useRef<number | null>(null);
+
+  // Teclado y lectores de pantalla siguen leyendo desde la primera reseña nueva;
+  // la vista no se mueve (preventScroll).
+  useEffect(() => {
+    const indice = primeraNueva.current;
+    if (indice === null) return;
+    primeraNueva.current = null;
+    const item = lista.current?.children[indice] as HTMLElement | undefined;
+    if (!item) return;
+    item.tabIndex = -1;
+    item.focus({ preventScroll: true });
+  }, [extra]);
 
   async function cargarMas() {
     setCargando(true);
@@ -33,6 +47,7 @@ export function MasResenas({ negocioId, cargadas, total }: { negocioId: string; 
       .range(mostradas, mostradas + RESENAS_POR_PAGINA - 1);
     setCargando(false);
     if (error) return setError(true);
+    primeraNueva.current = data.length > 0 ? extra.length : null;
     // Evitar repetidas si entró una reseña nueva desde que se generó la página.
     setExtra((previas) => {
       const vistas = new Set(previas.map((r) => r.id));
@@ -46,7 +61,7 @@ export function MasResenas({ negocioId, cargadas, total }: { negocioId: string; 
   return (
     <>
       {extra.length > 0 && (
-        <ul className="divide-y divide-brand-dark/10 border-t border-brand-dark/10 pt-4">
+        <ul ref={lista} className="divide-y divide-brand-dark/10 border-t border-brand-dark/10 pt-4">
           {extra.map((r) => (
             <ItemResena key={r.id} resena={r} />
           ))}

@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { eliminarArchivosNegocio } from "@/lib/archivos-negocio";
 import { obtenerSesion } from "@/lib/auth";
+import { conAviso } from "@/lib/avisos";
 import { avisoPorCambio, programarAvisoAdmin } from "@/lib/correos/avisos-admin";
 import { describirCambios } from "@/lib/constantes";
 import { revalidarDirectorio, revalidarPanelNegocio } from "@/lib/revalidacion";
@@ -140,5 +141,5 @@ export async function eliminarNegocio(id: string): Promise<ResultadoAccion> {
   if (error) return errorDeBaseDeDatos(error);
 
   if (negocio.estado === "aprobado") await revalidarDirectorio(negocio);
-  redirect("/panel?aviso=negocio-eliminado");
+  redirect(conAviso("/panel", "negocio-eliminado"));
 }

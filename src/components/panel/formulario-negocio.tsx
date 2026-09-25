@@ -2,14 +2,17 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type ReactNode } from "react";
-import { FormProvider, useForm, useWatch } from "react-hook-form";
+import { useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { FormProvider, useForm, useWatch, type FieldErrors } from "react-hook-form";
 
 import { aplicarErroresServidor } from "@/components/forms/errores";
 import { Alerta } from "@/components/ui/alerta";
 import { Boton } from "@/components/ui/boton";
 import { ariaCampo, Campo, Input, Select, Textarea } from "@/components/ui/campo";
+import { toast } from "@/components/ui/toast";
 import { actualizarNegocio, crearNegocio } from "@/lib/acciones/negocios";
+import { irAlPrimerError } from "@/lib/desplazamiento";
+import { cn } from "@/lib/utils";
 import { negocioSchema, type NegocioInput, type NegocioOutput } from "@/lib/validaciones/negocio";
 
 import { EditorHorario } from "./editor-horario";
@@ -55,6 +58,8 @@ export function FormularioNegocio({
     resolver: zodResolver(negocioSchema),
     defaultValues: valoresIniciales,
     mode: "onTouched",
+    // El foco al primer error lo maneja irAlPrimerError (con scroll suave y centrado).
+    shouldFocusError: false,
   });
   const {
     register,
@@ -66,7 +71,7 @@ export function FormularioNegocio({
   const [departamento, setDepartamento] = useState<string>(
     departamentoInicial ? String(departamentoInicial) : "",
   );
-  const [mensaje, setMensaje] = useState<string | null>(null);
+  const refFormulario = useRef<HTMLFormElement>(null);
 
   const municipiosDelDepartamento = useMemo(
     () => municipios.filter((m) => String(m.departamento_id) === departamento),
@@ -80,30 +85,54 @@ export function FormularioNegocio({
     return m ? [m.nombre, d?.nombre].filter(Boolean).join(", ") : null;
   }, [municipios, departamentos, municipioId]);
 
-  const onSubmit = form.handleSubmit(async () => {
-    setMensaje(null);
-    const valores = form.getValues();
-    const resultado = negocioId
-      ? await actualizarNegocio(negocioId, valores)
-      : await crearNegocio(valores);
-    if (!resultado) return; // crearNegocio redirige a la galería
-    if (!resultado.ok) {
-      aplicarErroresServidor(form, resultado);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-    setMensaje(resultado.mensaje ?? "Cambios guardados.");
-    form.reset(valores);
-    router.refresh();
-  });
+  function avisarErrores(cantidad: number) {
+    toast.error("Revisa los campos marcados", {
+      descripcion: cantidad === 1 ? "Hay 1 dato por corregir." : `Hay ${cantidad} datos por corregir.`,
+    });
+    irAlPrimerError(refFormulario.current);
+  }
+
+  // handleSubmit se arma al enviar (no durante el render): usa refs.
+  const onSubmit = (evento: FormEvent<HTMLFormElement>) =>
+    form.handleSubmit(
+      async () => {
+        const valores = form.getValues();
+        const resultado = negocioId
+          ? await actualizarNegocio(negocioId, valores)
+          : await crearNegocio(valores);
+        if (!resultado) return; // crearNegocio redirige a la galería
+        if (!resultado.ok) {
+          aplicarErroresServidor(form, resultado);
+          const campos = Object.keys(resultado.campos ?? {}).length;
+          if (campos > 0) avisarErrores(campos);
+          else toast.error(resultado.error);
+          return;
+        }
+        toast.exito(resultado.mensaje ?? "Cambios guardados");
+        form.reset(valores);
+        router.refresh();
+      },
+      (errores: FieldErrors<NegocioInput>) => avisarErrores(Object.keys(errores).length),
+    )(evento);
+
+  function descartarCambios() {
+    if (!confirm("¿Descartar los cambios que no guardaste?")) return;
+    form.reset();
+    const municipio = municipios.find((m) => String(m.id) === form.getValues("municipio_id"));
+    setDepartamento(municipio ? String(municipio.departamento_id) : "");
+    toast.info("Cambios descartados");
+  }
+
+  // Barra de guardar: en el celular siempre fija abajo; en la computadora solo
+  // mientras hay cambios sin guardar (así no hay que bajar hasta el final).
+  const barraFija = isDirty || !negocioId;
 
   const e = errors;
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={onSubmit} noValidate className="space-y-8">
+      <form ref={refFormulario} onSubmit={onSubmit} noValidate className="space-y-8">
         {e.root?.servidor && <Alerta tono="error">{e.root.servidor.message}</Alerta>}
-        {mensaje && !isDirty && <Alerta tono="exito">{mensaje}</Alerta>}
 
         <Seccion titulo="Información básica">
           <Campo etiqueta="Nombre del negocio" htmlFor="nombre" error={e.nombre?.message}>
@@ -293,7 +322,27 @@ export function FormularioNegocio({
           <EditorHorario />
         </Seccion>
 
-        <div className="sticky bottom-0 -mx-4 flex items-center justify-end gap-3 border-t border-brand-dark/10 bg-white/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
+        <div
+          // Lo flotante (botón "Volver arriba") se acomoda encima de esta barra.
+          data-barra-inferior={barraFija ? "siempre" : "movil"}
+          className={cn(
+            "sticky bottom-0 z-10 -mx-4 flex items-center justify-end gap-3 border-t border-brand-dark/10 bg-white/95 px-4 py-3 backdrop-blur",
+            barraFija
+              ? "sm:bottom-4 sm:mx-0 sm:rounded-2xl sm:border-0 sm:shadow-lg sm:ring-1 sm:shadow-brand-dark/10 sm:ring-brand-dark/10"
+              : "sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0",
+          )}
+        >
+          {negocioId && isDirty && (
+            <>
+              <p className="mr-auto flex items-center gap-2 text-sm font-medium text-brand-dark">
+                <span aria-hidden className="size-2 rounded-full bg-accent" />
+                Cambios sin guardar
+              </p>
+              <Boton type="button" variante="fantasma" onClick={descartarCambios} disabled={isSubmitting}>
+                Descartar
+              </Boton>
+            </>
+          )}
           <Boton type="submit" cargando={isSubmitting} tamano="lg" variante={negocioId ? "primario" : "acento"}>
             {negocioId ? "Guardar cambios" : "Enviar a revisión"}
           </Boton>

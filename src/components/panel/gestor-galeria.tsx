@@ -1,12 +1,12 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, ImagePlus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 
-import { Alerta } from "@/components/ui/alerta";
 import { Boton } from "@/components/ui/boton";
+import { toast } from "@/components/ui/toast";
 import {
   actualizarLogo,
   actualizarTextoAlternativo,
@@ -47,32 +47,40 @@ export function GestorGaleria({
   const router = useRouter();
   const inputFotos = useRef<HTMLInputElement>(null);
   const inputLogo = useRef<HTMLInputElement>(null);
-  const [subiendo, setSubiendo] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [subiendo, setSubiendo] = useState(false);
   const [pendiente, iniciarTransicion] = useTransition();
 
   const disponibles = Math.max(0, maxImagenes - imagenes.length);
 
+  // El progreso y el resultado van en un toast: se ven aunque la persona esté
+  // más abajo, mirando la galería.
   async function alElegirFotos(archivos: FileList | null) {
     if (!archivos?.length) return;
-    setError(null);
     const lista = [...archivos].slice(0, disponibles);
     if (archivos.length > disponibles) {
-      setError(`Tu plan permite ${maxImagenes} fotos. Solo se subirán ${disponibles}.`);
+      toast.info(`Tu plan permite ${maxImagenes} fotos`, { descripcion: `Solo se subirán ${disponibles}.` });
     }
+    setSubiendo(true);
+    const id = toast.cargando(lista.length === 1 ? "Subiendo foto…" : `Subiendo foto 1 de ${lista.length}…`);
+    let subidas = 0;
     try {
       for (const [i, archivo] of lista.entries()) {
-        setSubiendo(`Subiendo foto ${i + 1} de ${lista.length}…`);
+        if (i > 0) toast.cargando(`Subiendo foto ${i + 1} de ${lista.length}…`, { id });
         const imagen = await prepararImagen(archivo, 1600);
         const ruta = `${negocioId}/${crypto.randomUUID()}.${imagen.extension}`;
         await subirArchivo(ruta, imagen.blob, imagen.contentType);
         const resultado = await registrarImagen({ negocioId, ruta, ancho: imagen.ancho, alto: imagen.alto });
         if (!resultado.ok) throw new Error(resultado.error);
+        subidas++;
       }
+      toast.exito(subidas === 1 ? "Foto agregada" : `${subidas} fotos agregadas`, { id });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo subir la imagen.");
+      toast.error(e instanceof Error ? e.message : "No se pudo subir la imagen.", {
+        id,
+        ...(subidas > 0 && { descripcion: `Se subieron ${subidas} de ${lista.length}.` }),
+      });
     } finally {
-      setSubiendo(null);
+      setSubiendo(false);
       if (inputFotos.current) inputFotos.current.value = "";
       router.refresh();
     }
@@ -81,44 +89,38 @@ export function GestorGaleria({
   async function alElegirLogo(archivos: FileList | null) {
     const archivo = archivos?.[0];
     if (!archivo) return;
-    setError(null);
+    setSubiendo(true);
+    const id = toast.cargando("Subiendo logo…");
     try {
-      setSubiendo("Subiendo logo…");
       const imagen = await prepararImagen(archivo, 512);
       const ruta = `${negocioId}/logo-${crypto.randomUUID()}.${imagen.extension}`;
       await subirArchivo(ruta, imagen.blob, imagen.contentType);
       const resultado = await actualizarLogo({ negocioId, ruta });
       if (!resultado.ok) throw new Error(resultado.error);
+      toast.exito("Logo actualizado", { id });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo subir el logo.");
+      toast.error(e instanceof Error ? e.message : "No se pudo subir el logo.", { id });
     } finally {
-      setSubiendo(null);
+      setSubiendo(false);
       if (inputLogo.current) inputLogo.current.value = "";
       router.refresh();
     }
   }
 
-  function ejecutar(accion: () => Promise<{ ok: boolean; error?: string }>) {
-    setError(null);
+  /** `exito`: toast al terminar bien (mover una foto no lo necesita: se ve el cambio). */
+  function ejecutar(accion: () => Promise<{ ok: boolean; error?: string }>, exito?: string) {
     iniciarTransicion(async () => {
       const resultado = await accion();
-      if (!resultado.ok) setError(resultado.error ?? "Ocurrió un error.");
+      if (!resultado.ok) toast.error(resultado.error ?? "Ocurrió un error.");
+      else if (exito) toast.exito(exito);
       router.refresh();
     });
   }
 
-  const ocupado = subiendo !== null || pendiente;
+  const ocupado = subiendo || pendiente;
 
   return (
     <div className="space-y-8">
-      {error && <Alerta tono="error">{error}</Alerta>}
-      {subiendo && (
-        <Alerta tono="info">
-          <span className="inline-flex items-center gap-2">
-            <Loader2 className="size-4 animate-spin" aria-hidden /> {subiendo}
-          </span>
-        </Alerta>
-      )}
 
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-brand-dark/10 sm:p-6">
         <h2 className="text-lg font-bold text-brand-dark">Logo</h2>
@@ -145,7 +147,7 @@ export function GestorGaleria({
               {logoPath ? "Cambiar logo" : "Subir logo"}
             </Boton>
             {logoPath && (
-              <Boton variante="fantasma" tamano="sm" disabled={ocupado} onClick={() => ejecutar(() => quitarLogo(negocioId))}>
+              <Boton variante="fantasma" tamano="sm" disabled={ocupado} onClick={() => ejecutar(() => quitarLogo(negocioId), "Logo quitado")}>
                 Quitar
               </Boton>
             )}
@@ -220,7 +222,7 @@ export function GestorGaleria({
                     className="w-full rounded-md border border-brand-dark/15 px-2 py-1.5 text-xs"
                     onBlur={(ev) => {
                       if (ev.target.value !== (imagen.alt_text ?? "")) {
-                        ejecutar(() => actualizarTextoAlternativo(imagen.id, ev.target.value));
+                        ejecutar(() => actualizarTextoAlternativo(imagen.id, ev.target.value), "Descripción guardada");
                       }
                     }}
                   />
@@ -249,7 +251,7 @@ export function GestorGaleria({
                       type="button"
                       disabled={ocupado}
                       onClick={() => {
-                        if (confirm("¿Eliminar esta foto?")) ejecutar(() => eliminarImagen(imagen.id));
+                        if (confirm("¿Eliminar esta foto?")) ejecutar(() => eliminarImagen(imagen.id), "Foto eliminada");
                       }}
                       className="inline-flex items-center gap-1 rounded-md p-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
                     >

@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { Suspense } from "react";
 
+import { VolverArriba } from "@/components/layout/volver-arriba";
+import { AvisoUrl } from "@/components/ui/aviso-url";
+import { Toaster } from "@/components/ui/toast";
 import { SITE_NAME, SITE_URL } from "@/lib/env";
 import { COLORES } from "@/lib/marca";
 
@@ -36,8 +40,17 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es-HN" className={geistSans.variable}>
-      <body className="flex min-h-dvh flex-col font-sans">{children}</body>
+    // data-scroll-behavior: el scroll suave (globals.css) es solo para anclas dentro
+    // de la página; al cambiar de página Next salta arriba sin animación.
+    <html lang="es-HN" className={geistSans.variable} data-scroll-behavior="smooth">
+      <body className="flex min-h-dvh flex-col font-sans">
+        {children}
+        <VolverArriba />
+        <Toaster />
+        <Suspense fallback={null}>
+          <AvisoUrl />
+        </Suspense>
+      </body>
     </html>
   );
 }

@@ -1,21 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 
 import { Boton } from "@/components/ui/boton";
+import { toast } from "@/components/ui/toast";
 import { moderarResena } from "@/lib/acciones/admin";
 
 export function AccionesResena({ resenaId, oculta, reportada }: { resenaId: string; oculta: boolean; reportada: boolean }) {
   const router = useRouter();
   const [pendiente, iniciar] = useTransition();
-  const [error, setError] = useState<string | null>(null);
 
   const ejecutar = (accion: Parameters<typeof moderarResena>[1]) =>
     iniciar(async () => {
       const r = await moderarResena(resenaId, accion);
-      if (r.ok) router.refresh();
-      else setError(r.error);
+      if (!r.ok) return void toast.error(r.error);
+      toast.exito(r.mensaje ?? "Listo");
+      router.refresh();
     });
 
   return (
@@ -34,7 +35,6 @@ export function AccionesResena({ resenaId, oculta, reportada }: { resenaId: stri
           Descartar reporte
         </Boton>
       )}
-      {error && <p className="text-xs text-red-700">{error}</p>}
     </div>
   );
 }

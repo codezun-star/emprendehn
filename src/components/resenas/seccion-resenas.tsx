@@ -21,7 +21,7 @@ export function SeccionResenas({
   resenas: ResenaPublica[];
 }) {
   return (
-    <section id="resenas" className="scroll-mt-24 space-y-5 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-brand-dark/10 @xl:p-6">
+    <section id="resenas" className="scroll-mt-6 space-y-5 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-brand-dark/10 @xl:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-lg font-bold text-brand-dark">
           <MessageSquareQuote className="size-5" aria-hidden /> Reseñas

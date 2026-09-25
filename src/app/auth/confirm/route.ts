@@ -2,6 +2,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
 
+import { conAviso } from "@/lib/avisos";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { rutaSegura } from "@/lib/utils";
 
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   const tipo = searchParams.get("type") as EmailOtpType | null;
   const codigo = searchParams.get("code");
 
-  const destinoPorDefecto = tipo === "recovery" ? "/nueva-contrasena" : "/panel?aviso=cuenta-confirmada";
+  const destinoPorDefecto = tipo === "recovery" ? "/nueva-contrasena" : conAviso("/panel", "cuenta-confirmada");
   const siguiente = rutaSegura(searchParams.get("siguiente"), destinoPorDefecto);
 
   if (tokenHash && tipo && TIPOS_VALIDOS.includes(tipo)) {

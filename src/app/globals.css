@@ -14,11 +14,80 @@
   --color-bandera: #0073cf; /* azul de la bandera de Honduras: solo en el logo "HN" */
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+
+  /* Toasts (components/ui/toast.tsx): entran desde arriba en el celular y desde abajo en la computadora */
+  --animate-toast-entrar: toast-entrar 260ms cubic-bezier(0.21, 1.02, 0.73, 1) both;
+  --animate-toast-salir: toast-salir 180ms ease-in both;
+  --animate-toast-tiempo: toast-tiempo linear forwards;
+  --animate-aparecer: aparecer 200ms ease-out both;
+
+  @keyframes toast-entrar {
+    from {
+      opacity: 0;
+      transform: translateY(var(--toast-desde, -0.75rem)) scale(0.96);
+    }
+  }
+  @keyframes toast-salir {
+    to {
+      opacity: 0;
+      transform: scale(0.94);
+    }
+  }
+  @keyframes toast-tiempo {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+  }
 }
 
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    /* Al saltar a un #ancla o enfocar un campo, que no quede tapado por el encabezado fijo. */
+    scroll-padding-top: 5rem;
+  }
+
+  /* Página del negocio: la barra fija mide 4rem y las secciones traen su propio aire. */
+  html:has([data-pagina-negocio]) {
+    scroll-padding-top: 4rem;
+  }
+
+  /* Scroll suave solo dentro de la página (los cambios de página siguen siendo instantáneos:
+     data-scroll-behavior="smooth" en <html>) y solo si la persona no pidió menos movimiento. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Barras fijas abajo (contacto de la página del negocio en el celular, guardar
+     del formulario del negocio): lo flotante (botón "Volver arriba") se acomoda encima. */
+  @media (width < 48rem) {
+    body:has([data-barra-inferior]) {
+      --espacio-inferior: 4.75rem;
+    }
+  }
+  body:has([data-barra-inferior="siempre"]) {
+    --espacio-inferior: 5.5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+    }
   }
 
   body {

@@ -1,12 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { Alerta } from "@/components/ui/alerta";
 import { Boton, BotonEnlace } from "@/components/ui/boton";
 import { Campo, Textarea } from "@/components/ui/campo";
+import { toast } from "@/components/ui/toast";
 import { eliminarMiResena, guardarResena } from "@/lib/acciones/resenas";
+import { comportamientoScroll } from "@/lib/desplazamiento";
 import { crearClienteNavegador } from "@/lib/supabase/client";
 
 import { Estrellas } from "./estrellas";
@@ -26,8 +28,17 @@ export function EscribirResena({ negocioId, slug }: { negocioId: string; slug: s
   const [editando, setEditando] = useState(false);
   const [calificacion, setCalificacion] = useState(0);
   const [comentario, setComentario] = useState("");
-  const [mensaje, setMensaje] = useState<{ ok: boolean; texto: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [pendiente, iniciar] = useTransition();
+  const refFormulario = useRef<HTMLFormElement>(null);
+
+  // Al abrir el formulario: que se vea completo y el foco quede en las estrellas.
+  useEffect(() => {
+    if (!editando) return;
+    const formulario = refFormulario.current;
+    formulario?.scrollIntoView({ behavior: comportamientoScroll(), block: "nearest" });
+    formulario?.querySelector<HTMLElement>("input, button")?.focus({ preventScroll: true });
+  }, [editando]);
 
   useEffect(() => {
     const supabase = crearClienteNavegador();
@@ -57,19 +68,20 @@ export function EscribirResena({ negocioId, slug }: { negocioId: string; slug: s
   function abrirFormulario() {
     setCalificacion(mia?.calificacion ?? 0);
     setComentario(mia?.comentario ?? "");
-    setMensaje(null);
+    setError(null);
     setEditando(true);
   }
 
   function publicar(e: React.FormEvent) {
     e.preventDefault();
-    if (calificacion === 0) return setMensaje({ ok: false, texto: "Elige de 1 a 5 estrellas." });
+    if (calificacion === 0) return setError("Elige de 1 a 5 estrellas.");
+    setError(null);
     iniciar(async () => {
       const r = await guardarResena(negocioId, { calificacion, comentario });
-      if (!r.ok) return setMensaje({ ok: false, texto: r.error });
+      if (!r.ok) return setError(r.error);
       setMia({ calificacion, comentario: comentario.trim() || null, estado: mia?.estado ?? "publicada" });
       setEditando(false);
-      setMensaje({ ok: true, texto: r.mensaje ?? "Listo." });
+      toast.exito(r.mensaje ?? "Listo");
       router.refresh();
     });
   }
@@ -78,9 +90,9 @@ export function EscribirResena({ negocioId, slug }: { negocioId: string; slug: s
     if (!confirm("¿Eliminar tu reseña?")) return;
     iniciar(async () => {
       const r = await eliminarMiResena(negocioId);
-      if (!r.ok) return setMensaje({ ok: false, texto: r.error });
+      if (!r.ok) return void toast.error(r.error);
       setMia(null);
-      setMensaje({ ok: true, texto: r.mensaje ?? "Listo." });
+      toast.info(r.mensaje ?? "Tu reseña se eliminó");
       router.refresh();
     });
   }
@@ -105,10 +117,10 @@ export function EscribirResena({ negocioId, slug }: { negocioId: string; slug: s
 
   return (
     <div className="space-y-3">
-      {mensaje && <Alerta tono={mensaje.ok ? "exito" : "error"}>{mensaje.texto}</Alerta>}
+      {error && <Alerta tono="error">{error}</Alerta>}
 
       {editando ? (
-        <form onSubmit={publicar} className="space-y-4 rounded-xl bg-brand-light p-4">
+        <form ref={refFormulario} onSubmit={publicar} className="scroll-mt-4 space-y-4 rounded-xl bg-brand-light p-4">
           <div className="space-y-1.5">
             <p className="text-sm font-medium text-brand-dark">¿Cómo calificas este negocio?</p>
             <SelectorEstrellas valor={calificacion} onChange={setCalificacion} />

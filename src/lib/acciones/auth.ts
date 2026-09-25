@@ -4,6 +4,7 @@ import type { AuthError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 
 import { MENSAJE_MUY_RAPIDO, revisarAntispam, type Antispam } from "@/lib/antispam";
+import { conAviso } from "@/lib/avisos";
 import { SITE_URL } from "@/lib/env";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { rutaSegura } from "@/lib/utils";
@@ -144,11 +145,11 @@ export async function actualizarContrasena(input: NuevaContrasenaInput): Promise
   if (error?.code === "insufficient_aal") redirect("/dos-pasos?siguiente=/nueva-contrasena");
   if (error) return { ok: false, error: traducirErrorAuth(error), codigo: error.code };
 
-  redirect("/panel?aviso=contrasena-actualizada");
+  redirect(conAviso("/panel", "contrasena-actualizada"));
 }
 
 export async function cerrarSesion() {
   const supabase = await crearClienteServidor();
   await supabase.auth.signOut();
-  redirect("/");
+  redirect(conAviso("/", "sesion-cerrada"));
 }

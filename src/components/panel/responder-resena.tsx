@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 
 import { Boton } from "@/components/ui/boton";
 import { Textarea } from "@/components/ui/campo";
+import { toast } from "@/components/ui/toast";
 import { reportarResena, responderResena } from "@/lib/acciones/resenas";
 
 export function ResponderResena({
@@ -19,18 +20,17 @@ export function ResponderResena({
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
   const [respuesta, setRespuesta] = useState(respuestaActual ?? "");
-  const [mensaje, setMensaje] = useState<{ ok: boolean; texto: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [pendiente, iniciar] = useTransition();
 
   function ejecutar(accion: () => Promise<{ ok: true; mensaje?: string } | { ok: false; error: string }>, alTerminar?: () => void) {
-    setMensaje(null);
+    setError(null);
     iniciar(async () => {
       const r = await accion();
-      setMensaje(r.ok ? { ok: true, texto: r.mensaje ?? "Listo." } : { ok: false, texto: r.error });
-      if (r.ok) {
-        alTerminar?.();
-        router.refresh();
-      }
+      if (!r.ok) return setError(r.error);
+      toast.exito(r.mensaje ?? "Listo");
+      alTerminar?.();
+      router.refresh();
     });
   }
 
@@ -80,7 +80,11 @@ export function ResponderResena({
           )}
         </div>
       )}
-      {mensaje && <p className={`text-xs font-medium ${mensaje.ok ? "text-emerald-700" : "text-red-700"}`}>{mensaje.texto}</p>}
+      {error && (
+        <p role="alert" className="text-xs font-medium text-red-700">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

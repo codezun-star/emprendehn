@@ -2,27 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { IconoCategoria } from "@/components/directorio/icono-categoria";
-import { Alerta } from "@/components/ui/alerta";
 import { BotonEnlace } from "@/components/ui/boton";
 import { requerirAdmin } from "@/lib/auth";
 import { listarCategoriasAdmin } from "@/lib/consultas/admin";
 
 export const metadata: Metadata = { title: "Categorías" };
 
-const AVISOS: Record<string, string> = {
-  guardada: "Categoría guardada.",
-  eliminada: "Categoría eliminada.",
-};
-
-export default async function PaginaCategoriasAdmin({ searchParams }: PageProps<"/admin/categorias">) {
+export default async function PaginaCategoriasAdmin() {
   await requerirAdmin();
-  const [{ aviso }, categorias] = await Promise.all([searchParams, listarCategoriasAdmin()]);
+  const categorias = await listarCategoriasAdmin();
   const padres = categorias.filter((c) => c.parent_id === null);
   const hijasDe = (id: string) => categorias.filter((c) => c.parent_id === id);
 
   return (
     <div className="space-y-6">
-      {typeof aviso === "string" && AVISOS[aviso] && <Alerta tono="exito">{AVISOS[aviso]}</Alerta>}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-brand-dark">Categorías</h1>

@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 
+import { centrarEnFila } from "@/lib/desplazamiento";
 import { cn } from "@/lib/utils";
 
 export function PestanasNegocio({ negocioId }: { negocioId: string }) {
   const ruta = usePathname();
+  const fila = useRef<HTMLElement>(null);
   const base = `/panel/negocios/${negocioId}`;
   const pestanas = [
     { href: base, etiqueta: "Datos" },
@@ -15,8 +18,19 @@ export function PestanasNegocio({ negocioId }: { negocioId: string }) {
     { href: `${base}/estadisticas`, etiqueta: "Estadísticas" },
     { href: `${base}/resenas`, etiqueta: "Reseñas" },
   ];
+
+  // En el celular no caben todas: la pestaña activa queda a la vista, centrada.
+  useEffect(() => {
+    centrarEnFila(fila.current?.querySelector<HTMLElement>('[aria-current="page"]') ?? null);
+  }, [ruta]);
+
   return (
-    <nav aria-label="Secciones del negocio" className="flex gap-1 overflow-x-auto border-b border-brand-dark/10">
+    <nav
+      ref={fila}
+      aria-label="Secciones del negocio"
+      data-fila-desplazable
+      className="flex gap-1 overflow-x-auto overscroll-x-contain border-b border-brand-dark/10 [scrollbar-width:none]"
+    >
       {pestanas.map((p) => {
         const activa = ruta === p.href;
         return (

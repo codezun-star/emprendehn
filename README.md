@@ -208,6 +208,13 @@ supabase/templates/       plantillas de correo de Auth
   negocios llevan `noindex`, y `/buscar` se excluye en `robots.txt`.
 - **Formularios:** react-hook-form + Zod 4. El mismo esquema valida en el navegador y
   otra vez en la server action.
+- **Toasts y scroll.** El resultado de cada acción (guardar, subir fotos, moderar,
+  copiar el enlace…) aparece en un toast propio, sin dependencias; los avisos después de
+  una redirección llegan como `?aviso=` y se muestran igual. El formulario del negocio
+  lleva al primer campo con error y su barra de guardar flota mientras hay cambios sin
+  guardar. La página del negocio marca la sección que se está leyendo, el encabezado del
+  directorio se esconde al bajar y "Volver arriba" aparece solo en páginas largas. Todo
+  respeta *reducir movimiento* del sistema.
 
 ## Despliegue en Vercel
 
