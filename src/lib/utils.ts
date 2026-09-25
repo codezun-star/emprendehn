@@ -9,14 +9,24 @@ export function cn(...clases: Array<string | false | null | undefined>): string 
 }
 
 /**
- * Evita redirecciones abiertas: solo acepta rutas internas ("/panel", no
- * "//evil.com" ni "https://…").
+ * Evita redirecciones abiertas: solo acepta rutas internas ("/panel?x=1").
+ * Rechaza "//evil.com", "/\evil.com", "https://…" y los trucos con caracteres
+ * de control: el navegador borra tabs y saltos de línea de las URLs, así que
+ * "/\t/evil.com" terminaría siendo "//evil.com".
  */
 export function rutaSegura(ruta: string | null | undefined, porDefecto = "/panel"): string {
-  if (!ruta || !ruta.startsWith("/") || ruta.startsWith("//") || ruta.startsWith("/\\")) {
+  const interna = (r: string) => /^\/(?![/\\])/.test(r) && !/[\p{Cc}\\]/u.test(r);
+  if (!ruta || ruta.length > 2000 || !interna(ruta)) return porDefecto;
+  // Última red: resuelta contra un origen cualquiera, debe seguir en ese origen
+  // y la ruta ya normalizada tampoco puede empezar con "//" ("/..//evil.com").
+  const base = "https://emprendehn.invalid";
+  try {
+    const url = new URL(ruta, base);
+    const normalizada = url.pathname + url.search + url.hash;
+    return url.origin === base && interna(normalizada) ? normalizada : porDefecto;
+  } catch {
     return porDefecto;
   }
-  return ruta;
 }
 
 /** Recorta un texto a `max` caracteres sin cortar palabras. */

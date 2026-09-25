@@ -16,9 +16,14 @@ const MENSAJES: Record<string, string> = {
   google: "No pudimos iniciar sesión con Google. Inténtalo de nuevo o ingresa con tu correo.",
 };
 
+const AVISOS: Record<string, string> = {
+  "sesiones-cerradas": "Cerraste la sesión en todos tus dispositivos. Vuelve a ingresar en este.",
+};
+
 export default async function PaginaIngresar({ searchParams }: PageProps<"/ingresar">) {
-  const { siguiente, error } = await searchParams;
+  const { siguiente, error, aviso } = await searchParams;
   const mensajeError = typeof error === "string" ? MENSAJES[error] : undefined;
+  const mensajeAviso = typeof aviso === "string" ? AVISOS[aviso] : undefined;
 
   return (
     <div className="space-y-6">
@@ -27,6 +32,7 @@ export default async function PaginaIngresar({ searchParams }: PageProps<"/ingre
         <p className="text-sm text-ink/70">Administra el perfil de tu negocio.</p>
       </div>
       {mensajeError && <Alerta tono="error">{mensajeError}</Alerta>}
+      {mensajeAviso && <Alerta tono="exito">{mensajeAviso}</Alerta>}
       <BotonGoogle siguiente={typeof siguiente === "string" ? siguiente : undefined} />
       <FormularioIngreso siguiente={typeof siguiente === "string" ? siguiente : undefined} />
       <p className="text-center text-sm text-ink/70">

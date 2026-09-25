@@ -2,9 +2,9 @@
 -- Entorno mínimo que imita a Supabase para probar las migraciones en un
 -- Postgres limpio (CI y scripts/probar-migraciones.sh). NO se aplica en Supabase.
 -- · roles anon / authenticated / service_role y privilegios por defecto
--- · auth.users y auth.uid() (lee el "sub" de request.jwt.claim.sub)
+-- · auth.users, auth.uid() y auth.jwt() (claims del JWT: sub, aal, amr)
 -- · storage.buckets / storage.objects / storage.foldername()
--- · helpers de prueba: t_ok(condición, mensaje) y t_como(uuid)
+-- · helpers de prueba: t_ok(condición, mensaje) y t_como(uuid[, nivel, totp_hace])
 -- =============================================================================
 \set ON_ERROR_STOP 1
 
@@ -31,8 +31,16 @@ create table auth.users (
 create function auth.uid() returns uuid language sql stable as $$
   select nullif(coalesce(
     nullif(current_setting('request.jwt.claim.sub', true), ''),
-    current_setting('request.jwt.claims', true)::jsonb ->> 'sub'
+    nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'
   ), '')::uuid
+$$;
+
+-- Como en Supabase: todas las claims del JWT (aal, amr, email…).
+create function auth.jwt() returns jsonb language sql stable as $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claim', true), ''),
+    nullif(current_setting('request.jwt.claims', true), '')
+  )::jsonb
 $$;
 
 create table storage.buckets (
@@ -43,7 +51,7 @@ alter table storage.objects enable row level security;
 create function storage.foldername(name text) returns text[] language sql as $$ select string_to_array(name, '/') $$;
 
 grant usage on schema public, auth, extensions, storage to anon, authenticated, service_role;
-grant execute on function auth.uid() to anon, authenticated;
+grant execute on function auth.uid(), auth.jwt() to anon, authenticated;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
@@ -56,6 +64,23 @@ begin
   if cond is not true then raise exception 'FALLA: %', msg; end if;
   raise notice 'OK  %', msg;
 end $$;
-create function pruebas.t_como(uid uuid) returns void language plpgsql as $$
-begin perform set_config('request.jwt.claim.sub', coalesce(uid::text, ''), false); end $$;
+-- Sesión de prueba. Por defecto con el segundo factor recién verificado
+-- (aal2 + código TOTP de hace 1 minuto), como un admin que entró al panel.
+create function pruebas.t_como(uid uuid, nivel text default 'aal2', totp_hace interval default '1 minute')
+returns void language plpgsql as $$
+declare
+  ahora bigint := extract(epoch from now())::bigint;
+begin
+  perform set_config('request.jwt.claim.sub', coalesce(uid::text, ''), false);
+  perform set_config('request.jwt.claims', case when uid is null then '' else jsonb_build_object(
+    'sub', uid,
+    'role', 'authenticated',
+    'aal', nivel,
+    'amr', case when nivel = 'aal2'
+      then jsonb_build_array(
+        jsonb_build_object('method', 'totp', 'timestamp', ahora - extract(epoch from totp_hace)::bigint),
+        jsonb_build_object('method', 'password', 'timestamp', ahora - 86400))
+      else jsonb_build_array(jsonb_build_object('method', 'password', 'timestamp', ahora - 60)) end
+  )::text end, false);
+end $$;
 grant execute on all functions in schema pruebas to anon, authenticated;

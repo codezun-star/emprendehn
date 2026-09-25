@@ -33,7 +33,7 @@ export default async function PaginaCuenta() {
         </p>
       </section>
 
-      {sesion.esAdmin ? (
+      {sesion.rolAdmin ? (
         <Alerta tono="info" titulo="Cuenta de administrador">
           Las cuentas de administrador no se pueden eliminar desde el panel. Quita primero el rol de
           administrador desde el SQL Editor de Supabase.

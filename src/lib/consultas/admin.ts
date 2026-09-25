@@ -148,3 +148,15 @@ export async function listarResenasAdmin(vista: "reportadas" | "recientes", pagi
   if (error) throw new Error(`No se pudieron cargar las reseñas: ${error.message}`);
   return { resenas: data, total: count ?? 0 };
 }
+
+/** Registro de actividad del admin (migración 020), lo más reciente primero. */
+export async function listarAuditoria(pagina = 1) {
+  const supabase = await crearClienteServidor();
+  const { data, count, error } = await supabase
+    .from("admin_auditoria")
+    .select("id, created_at, actor_email, accion, tabla, registro_id, registro, cambios", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range((pagina - 1) * POR_PAGINA_ADMIN, pagina * POR_PAGINA_ADMIN - 1);
+  if (error) throw new Error(`No se pudo cargar la actividad: ${error.message}`);
+  return { registros: data, total: count ?? 0 };
+}

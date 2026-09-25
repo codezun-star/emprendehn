@@ -314,6 +314,15 @@ penaliza Google.
   trampa invisible y tiempo mínimo en registro, recuperación y reportes; bloqueo de
   correos temporales en el registro. CAPTCHA de Turnstile en modo invisible, apagado
   salvo que exista `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (el token lo valida Supabase Auth).
+- **Admin con verificación en dos pasos** (migración 020, `lib/dos-pasos.ts`,
+  `/dos-pasos`): Supabase Auth MFA con TOTP. El JWT trae `aal` y `amr`; `proxy.ts` manda
+  `/admin/*` a `/dos-pasos?siguiente=…` si el código no es de las últimas 12 h, y
+  `requerirAdmin` lo vuelve a comprobar. `is_admin()` en la base exige lo mismo (con 10 min
+  de margen), así que la contraseña sola no da permisos de admin ni llamando a la API.
+  `Sesion.rolAdmin` es el rol a secas (para mostrar el enlace o prohibir borrar la cuenta);
+  `Sesion.esAdmin` = rol + código vigente. Lo que cambia una sesión de admin (y todo cambio
+  de rol) queda en `admin_auditoria`, visible en `/admin/actividad`. Auditoría completa,
+  CSP y recuperación del código: [seguridad.md](seguridad.md).
 - Tendrás que ajustar las plantillas de email en el dashboard. Te daré el texto exacto
   cuando lleguemos a ese paso.
 
@@ -550,6 +559,8 @@ El esquema actual ya lo soporta sin romper nada:
 | `008_storage.sql` | bucket `business-images` + políticas de `storage.objects` | galería |
 | `009_funciones_directorio.sql` | RPC `buscar_negocios` (búsqueda + filtros + orden) y `resumen_directorio` (conteos por categoría/ciudad) | directorio público, sitemap |
 | `010_revision_de_cambios.sql` | columnas `cambios_por_revisar*`, trigger guardián actualizado, trigger de fotos nuevas | moderación posterior, reenvío de suspendidos |
+| `011`–`019` | reportes, estadísticas, abierto ahora, redirecciones, reseñas, mapa, ciudad en la URL, rendimiento | ver README |
+| `020_seguridad.sql` | `is_admin()` con segundo factor, `tiene_rol_admin()`, permisos mínimos, `CHECK` de redes y rutas, política de Storage por nombre, `admin_auditoria` | panel de admin, auditoría |
 
 ## 5. Orden de construcción
 

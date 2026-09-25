@@ -140,6 +140,8 @@ export async function actualizarContrasena(input: NuevaContrasenaInput): Promise
   }
 
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  // Cuenta con verificación en dos pasos (admin): Supabase pide el código antes.
+  if (error?.code === "insufficient_aal") redirect("/dos-pasos?siguiente=/nueva-contrasena");
   if (error) return { ok: false, error: traducirErrorAuth(error), codigo: error.code };
 
   redirect("/panel?aviso=contrasena-actualizada");

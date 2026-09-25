@@ -35,7 +35,7 @@ function errorDeConsulta(contexto: string, error: { message: string; code?: stri
   return new Error(
     `${contexto}: ${error.message}` +
       (faltaEsquema
-        ? " — ¿Ya aplicaste las migraciones de supabase/migrations (001–019) en este proyecto de Supabase?"
+        ? " — ¿Ya aplicaste las migraciones de supabase/migrations (001–020) en este proyecto de Supabase?"
         : ""),
   );
 }

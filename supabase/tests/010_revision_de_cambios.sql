@@ -55,13 +55,13 @@ update public.businesses set logo_path = null where id = (select id from n);
 reset role;
 select pruebas.t_ok((select not ('logo' = any(cambios_por_revisar)) from public.businesses where id = (select id from n)), 'quitar logo: no marca');
 set role authenticated; select pruebas.t_como('11111111-1111-1111-1111-111111111111');
-update public.businesses set logo_path = (select id from n)::text || '/logo.webp' where id = (select id from n);
+update public.businesses set logo_path = (select id from n)::text || '/logo-' || gen_random_uuid() || '.webp' where id = (select id from n);
 reset role;
 select pruebas.t_ok((select 'logo' = any(cambios_por_revisar) from public.businesses where id = (select id from n)), 'poner logo: marca logo');
 
 -- 8. Foto nueva en aprobado -> marca fotos
 set role authenticated; select pruebas.t_como('11111111-1111-1111-1111-111111111111');
-insert into public.business_images (business_id, storage_path) select id, id::text || '/a.webp' from n;
+insert into public.business_images (business_id, storage_path) select id, id::text || '/' || gen_random_uuid() || '.webp' from n;
 reset role;
 select pruebas.t_ok((select 'fotos' = any(cambios_por_revisar) and estado = 'aprobado' from public.businesses where id = (select id from n)), 'foto nueva: marca fotos, sigue aprobado');
 
@@ -98,7 +98,7 @@ select pruebas.t_ok((select estado = 'pendiente' and motivo_estado is null from 
 set role authenticated; select pruebas.t_como('22222222-2222-2222-2222-222222222222');
 update public.businesses set estado = 'rechazado', motivo_estado = 'Agrega fotos reales del local.' where id = (select id from n);
 select pruebas.t_como('11111111-1111-1111-1111-111111111111');
-insert into public.business_images (business_id, storage_path) select id, id::text || '/b.webp' from n;
+insert into public.business_images (business_id, storage_path) select id, id::text || '/' || gen_random_uuid() || '.webp' from n;
 reset role;
 select pruebas.t_ok((select estado = 'pendiente' and motivo_estado is null and cambios_por_revisar = '{}' from public.businesses where id = (select id from n)), 'rechazado + foto: vuelve a pendiente');
 
@@ -110,7 +110,7 @@ reset role;
 select pruebas.t_ok((select aprobado_en = (select a from ap) from public.businesses where id = (select id from n)), 'reaprobar conserva aprobado_en');
 
 -- 15. Foto subida por el admin o desde el SQL editor no marca
-insert into public.business_images (business_id, storage_path) select id, id::text || '/c.webp' from n;
+insert into public.business_images (business_id, storage_path) select id, id::text || '/' || gen_random_uuid() || '.webp' from n;
 select pruebas.t_ok((select cambios_por_revisar = '{}' from public.businesses where id = (select id from n)), 'foto desde SQL editor: no marca');
 
 -- 16. El dueño sigue sin poder cambiar estado

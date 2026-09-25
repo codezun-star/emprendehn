@@ -15,7 +15,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Áreas privadas y búsqueda interna (combinaciones infinitas de parámetros).
-      disallow: ["/panel", "/admin", "/auth/", "/buscar", "/nueva-contrasena"],
+      disallow: ["/panel", "/admin", "/dos-pasos", "/auth/", "/buscar", "/nueva-contrasena"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,

@@ -3,6 +3,7 @@ import "server-only";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 
+import { dosPasosVigenteHasta } from "@/lib/dos-pasos";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database.types";
 
@@ -12,7 +13,12 @@ export type Sesion = {
   userId: string;
   email: string;
   perfil: Perfil | null;
+  /** Tiene rol admin (aunque todavía no haya ingresado su código). */
+  rolAdmin: boolean;
+  /** Rol admin + código de la app de autenticación verificado hace menos de 12 h. */
   esAdmin: boolean;
+  /** Hasta cuándo (ms) vale la verificación en dos pasos de esta sesión. */
+  dosPasosHasta: number | null;
 };
 
 /**
@@ -31,11 +37,15 @@ export const obtenerSesion = cache(async (): Promise<Sesion | null> => {
     .eq("id", claims.sub)
     .maybeSingle();
 
+  const rolAdmin = perfil?.rol === "admin";
+  const dosPasosHasta = dosPasosVigenteHasta(claims);
   return {
     userId: claims.sub,
     email: (typeof claims.email === "string" ? claims.email : perfil?.email) ?? "",
     perfil,
-    esAdmin: perfil?.rol === "admin",
+    rolAdmin,
+    esAdmin: rolAdmin && dosPasosHasta !== null,
+    dosPasosHasta,
   };
 });
 
@@ -48,9 +58,14 @@ export async function requerirUsuario(siguiente = "/panel"): Promise<Sesion> {
   return sesion;
 }
 
-/** Exige rol admin. A un no-admin le responde 404 (no revela que /admin existe). */
+/**
+ * Exige admin con la verificación en dos pasos vigente. A un no-admin le
+ * responde 404 (no revela que /admin existe); a un admin sin código reciente lo
+ * manda a /dos-pasos (proxy.ts ya lo hace conservando la ruta pedida).
+ */
 export async function requerirAdmin(): Promise<Sesion> {
   const sesion = await requerirUsuario("/admin");
-  if (!sesion.esAdmin) notFound();
+  if (!sesion.rolAdmin) notFound();
+  if (!sesion.esAdmin) redirect("/dos-pasos");
   return sesion;
 }

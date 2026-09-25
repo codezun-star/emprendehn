@@ -12,7 +12,7 @@ export default async function LayoutPanel({ children }: LayoutProps<"/panel">) {
   const sesion = await requerirUsuario("/panel");
   return (
     <>
-      <PanelHeader email={sesion.email} esAdmin={sesion.esAdmin} seccion="panel" />
+      <PanelHeader email={sesion.email} esAdmin={sesion.rolAdmin} seccion="panel" />
       <main id="contenido" className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
         {children}
       </main>

@@ -16,7 +16,7 @@ create temp table neg as
   select id, estado from public.businesses where owner_id = '33333333-3333-3333-3333-333333333333';
 grant select on neg to anon, authenticated;
 insert into public.business_images (business_id, storage_path)
-select id, id::text || '/foto.webp' from neg where estado = 'aprobado';
+select id, id::text || '/' || gen_random_uuid() || '.webp' from neg where estado = 'aprobado';
 
 -- 1. Un visitante (anon) reporta: el primero avisa, el segundo no
 set role anon; select pruebas.t_como(null);

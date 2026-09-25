@@ -7,4 +7,5 @@
 - Nombres del dominio en español (`negocio`, `categoria`, `ciudad`); convenciones técnicas en inglés cuando es lo idiomático.
 - Páginas públicas: usar `crearClientePublico()` (sin cookies) para no romper el ISR. Tras mutaciones que afecten al directorio, llamar a `revalidarDirectorio()`.
 - Colores solo vía tokens de Tailwind (`brand-dark`, `brand`, `brand-light`, `accent`, `ink`); texto `ink` sobre `accent`.
+- Seguridad (ver `docs/seguridad.md`): `is_admin()` exige rol + segundo factor (TOTP de < 12 h); para prohibir algo a una cuenta admin usar `tiene_rol_admin()` / `Sesion.rolAdmin`. En pruebas SQL, `pruebas.t_como(uid)` simula esa sesión verificada (`t_como(uid, 'aal1')` sin código). Un servicio externo nuevo debe agregarse a la CSP de `next.config.ts`. Redirecciones con `?siguiente=` siempre por `rutaSegura()`.
 - Validar con `npm run lint && npm run typecheck && npm run build`.

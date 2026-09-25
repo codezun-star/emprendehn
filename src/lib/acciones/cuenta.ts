@@ -18,7 +18,7 @@ export async function eliminarMiCuenta(confirmacion: string): Promise<ResultadoA
   if (confirmacion.trim().toUpperCase() !== "ELIMINAR") {
     return { ok: false, error: "Escribe ELIMINAR para confirmar." };
   }
-  if (sesion.esAdmin) {
+  if (sesion.rolAdmin) {
     return { ok: false, error: "Un administrador no puede eliminar su propia cuenta desde el panel." };
   }
 

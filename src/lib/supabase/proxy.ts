@@ -6,7 +6,7 @@ import type { Database } from "@/types/database.types";
 
 /**
  * Refresca la sesión de Supabase (cookies) y devuelve la respuesta a usar
- * junto con el id del usuario autenticado (o null).
+ * junto con el id del usuario autenticado (o null) y las claims del JWT.
  */
 export async function actualizarSesion(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -31,7 +31,8 @@ export async function actualizarSesion(request: NextRequest) {
   // No poner código entre createServerClient y getClaims(): getClaims valida
   // el JWT y dispara el refresh del token si hace falta.
   const { data } = await supabase.auth.getClaims();
-  const userId = data?.claims?.sub ?? null;
+  const claims = data?.claims ?? null;
+  const userId = claims?.sub ?? null;
 
-  return { response, userId };
+  return { response, userId, claims };
 }

@@ -70,6 +70,7 @@ ejecutar sin romper nada.
 | 017 | `slug_con_ciudad` | La ciudad en la URL (`/negocio/{nombre}-{ciudad}`); al cambiar de ciudad, la URL anterior redirige |
 | 018 | `redirecciones_necesarias` | Sin redirecciones de negocios nunca publicados; una URL vieja queda reservada 12 meses |
 | 019 | `rendimiento_busqueda` | Documento de búsqueda guardado con índice GIN; `buscar_negocios` más liviano; índices del admin |
+| 020 | `seguridad` | Admin con verificación en dos pasos exigida en la base, permisos mínimos, validaciones de redes y rutas, registro de actividad del admin. **Antes de aplicarla, activa tu código en `/dos-pasos`** (ver [docs/seguridad.md](docs/seguridad.md)) |
 
 ### 3. Configuración de Supabase Auth (dashboard)
 
@@ -129,6 +130,11 @@ update public.profiles set rol = 'admin' where email = 'tu-correo@ejemplo.com';
 El rol nunca se toma de los datos del registro, así que un usuario no puede darse admin
 a sí mismo.
 
+Luego entra a `/admin`: la primera vez te pedirá **activar la verificación en dos pasos**
+con una app de autenticación (Google Authenticator, Authy, 1Password…). Desde entonces,
+el panel pide el código cada 12 horas. Recuperación si pierdes el teléfono y demás
+detalles: [docs/seguridad.md](docs/seguridad.md).
+
 ### 5. Desarrollo
 
 ```bash
@@ -184,7 +190,9 @@ supabase/templates/       plantillas de correo de Auth
   verificar el usuario y el rol, y RLS decide al final. Como RLS es por fila, un trigger
   guardián impide que un no-admin cambie `estado`, `plan`, `slug`, `owner_id` o
   `motivo_estado`. Los grants por columna limitan lo que un usuario puede editar de su
-  perfil y de sus fotos.
+  perfil y de sus fotos. El admin necesita además un código de su app de autenticación
+  (también exigido en la base), todo lo que hace queda en un registro de actividad, y el
+  sitio envía CSP y HSTS. Detalle y auditoría: [docs/seguridad.md](docs/seguridad.md).
 - **Moderación.** Todo negocio nuevo queda `pendiente`. Si el dueño edita un negocio
   aprobado, los cambios se publican al instante. Si el negocio está `rechazado`, al
   editarlo vuelve solo a `pendiente`. Máximo 3 negocios por cuenta (anti-spam).
@@ -206,8 +214,9 @@ supabase/templates/       plantillas de correo de Auth
 El build **prerenderiza con datos reales** el inicio, `/categorias` y el sitemap. Por eso
 el orden importa:
 
-1. **Aplica las migraciones 001–019** en tu proyecto de Supabase. Si faltan, el build
-   falla con el aviso "¿Ya aplicaste las migraciones…?".
+1. **Aplica las migraciones 001–020** en tu proyecto de Supabase. Si faltan, el build
+   falla con el aviso "¿Ya aplicaste las migraciones…?". La 020 va **después** de desplegar
+   y activar la verificación en dos pasos del admin (ver [docs/seguridad.md](docs/seguridad.md) §3).
 2. **Variables de entorno** en *Vercel → Project → Settings → Environment Variables*,
    marcando **Production** y **Preview**:
    - `NEXT_PUBLIC_SUPABASE_URL`

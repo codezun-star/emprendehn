@@ -15,6 +15,23 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_auditoria: {
+        Row: {
+          accion: "crear" | "editar" | "eliminar"
+          actor_email: string | null
+          actor_id: string | null
+          cambios: Json
+          created_at: string
+          id: number
+          registro: string | null
+          registro_id: string | null
+          tabla: string
+        }
+        // Solo la escriben triggers de la base (nadie tiene permiso de insertar/editar).
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       business_reviews: {
         Row: {
           autor_nombre: string
@@ -547,6 +564,8 @@ export type Database = {
       es_dueno_negocio: { Args: { p_business_id: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       puedo_eliminar_mi_cuenta: { Args: never; Returns: boolean }
+      redes_sociales_validas: { Args: { p_redes: Json }; Returns: boolean }
+      tiene_rol_admin: { Args: never; Returns: boolean }
       registrar_evento: { Args: { p_business_id: string; p_evento: string }; Returns: undefined }
       reportar_negocio: {
         Args: { p_business_id: string; p_motivo: string; p_detalle?: string; p_contacto?: string }
