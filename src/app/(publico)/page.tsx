@@ -55,7 +55,7 @@ export default async function PaginaInicio() {
       <section className="mx-auto max-w-6xl px-4 py-12">
         <div className="mb-6 flex items-end justify-between gap-4">
           <h2 className="text-2xl font-bold text-brand-dark">Explora por categoría</h2>
-          <Link href="/categorias" className="text-sm font-semibold">
+          <Link href="/categorias" className="shrink-0 text-sm font-semibold whitespace-nowrap">
             Ver todas →
           </Link>
         </div>
@@ -64,13 +64,16 @@ export default async function PaginaInicio() {
             <li key={c.id}>
               <Link
                 href={`/categoria/${c.slug}`}
-                className="flex h-full items-center gap-3 rounded-2xl bg-white p-4 no-underline shadow-sm ring-1 ring-brand-dark/10 transition hover:ring-brand active:scale-[0.97]"
+                // En el celular el ícono va arriba: el nombre usa todo el ancho de la tarjeta.
+                className="flex h-full flex-col items-start gap-2.5 rounded-2xl bg-white p-3.5 no-underline shadow-sm ring-1 ring-brand-dark/10 transition hover:ring-brand active:scale-[0.97] sm:flex-row sm:items-center sm:gap-3 sm:p-4"
               >
-                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-light text-brand">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-light text-brand sm:size-11">
                   <IconoCategoria icono={c.icono} className="size-5" />
                 </span>
-                <span className="min-w-0">
-                  <span className="block font-semibold leading-tight text-brand-dark">{c.nombre}</span>
+                <span className="min-w-0 max-w-full">
+                  <span className="block text-[0.9375rem] font-semibold leading-tight text-balance text-brand-dark hyphens-auto sm:text-base">
+                    {c.nombre}
+                  </span>
                   <span className="text-xs text-ink/60">
                     {textoConteo(conteo.get(c.slug))}
                   </span>

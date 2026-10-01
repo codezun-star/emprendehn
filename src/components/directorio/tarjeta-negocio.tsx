@@ -36,7 +36,7 @@ export function TarjetaNegocio({ negocio, prioridad = false }: { negocio: Result
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand">{negocio.categoria_nombre}</p>
-        <h3 className="text-lg font-bold leading-snug text-brand-dark">
+        <h3 className="text-lg font-bold leading-snug text-brand-dark wrap-anywhere">
           <Link href={`/negocio/${negocio.slug}`} className="text-brand-dark no-underline after:absolute after:inset-0">
             {negocio.nombre}
           </Link>
@@ -54,7 +54,7 @@ export function TarjetaNegocio({ negocio, prioridad = false }: { negocio: Result
 
 export function RejillaNegocios({ negocios }: { negocios: ResultadoBusqueda[] }) {
   return (
-    <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {negocios.map((n, i) => (
         <li key={n.id} className="flex">
           <div className="w-full">

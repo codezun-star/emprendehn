@@ -362,6 +362,11 @@ penaliza Google.
     Sin service worker: no hay caché offline que pueda servir páginas viejas del ISR.
     Abierta como app (`standalone:` en Tailwind) la página del negocio muestra su botón
     "Volver", porque no hay barra del navegador.
+  - *Sin desbordes*: `npm run revisar:desborde` (`scripts/revisar-desborde.mjs`, con
+    `playwright-core`) abre las páginas a 320, 360, 390 y 430 px y falla si algo se sale
+    de la pantalla o de su caja. `body` lleva `overflow-wrap: break-word`; en filas
+    flex/grid con texto de los usuarios hace falta además `wrap-anywhere` o `min-w-0`, y
+    las rejillas de una columna usan `grid-cols-1` (no se estiran con una palabra larga).
   - `viewport-fit=cover`: las barras fijas usan `env(safe-area-inset-*)` (muesca, barra de
     inicio del iPhone). Sin el recuadro gris al tocar: botones, tarjetas y pestañas
     responden con `active:` (se achican un poco).

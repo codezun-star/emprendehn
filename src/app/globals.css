@@ -162,6 +162,10 @@
 
   body {
     @apply bg-brand-light text-ink antialiased;
+    /* Una palabra o enlace muy largo (nombres de negocios, reseñas) se parte antes
+       que salirse de su caja. En filas flex/grid hace falta además wrap-anywhere
+       o min-w-0. Revisión automática: npm run revisar:desborde. */
+    overflow-wrap: break-word;
   }
 
   a {

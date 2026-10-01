@@ -195,7 +195,7 @@ export function GestorGaleria({
             más visitas.
           </button>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {imagenes.map((imagen, i) => (
               <li key={imagen.id} className="overflow-hidden rounded-xl ring-1 ring-brand-dark/10">
                 <div className="relative aspect-[4/3] bg-brand-light">
