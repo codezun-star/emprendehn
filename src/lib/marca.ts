@@ -43,3 +43,15 @@ export function svgMarca(radio = 14): string {
 export function uriMarca(radio = 14): string {
   return `data:image/svg+xml,${encodeURIComponent(svgMarca(radio))}`;
 }
+
+/**
+ * Ícono adaptable de Android ("maskable"): el sistema lo recorta en círculo, gota,
+ * etc. Las franjas llegan a los bordes y las letras se achican hasta caber en la
+ * zona segura (el círculo central del 80 %).
+ */
+export function uriMarcaAdaptable(): string {
+  const [arriba, abajo] = franjasMarca(0);
+  const { x, y, width, height, rx } = TRAZOS_MARCA.recuadroN;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#fff"/><path fill="${COLORES.bandera}" d="${arriba}"/><path fill="${COLORES.bandera}" d="${abajo}"/><g transform="translate(32 32) scale(0.76) translate(-32 -32)"><path fill="${COLORES.bandera}" d="${TRAZOS_MARCA.h}"/><rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${rx}" fill="${COLORES.bandera}"/><path fill="#fff" d="${TRAZOS_MARCA.n}"/></g></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}

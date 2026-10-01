@@ -64,7 +64,7 @@ export default async function PaginaInicio() {
             <li key={c.id}>
               <Link
                 href={`/categoria/${c.slug}`}
-                className="flex h-full items-center gap-3 rounded-2xl bg-white p-4 no-underline shadow-sm ring-1 ring-brand-dark/10 transition hover:ring-brand"
+                className="flex h-full items-center gap-3 rounded-2xl bg-white p-4 no-underline shadow-sm ring-1 ring-brand-dark/10 transition hover:ring-brand active:scale-[0.97]"
               >
                 <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-light text-brand">
                   <IconoCategoria icono={c.icono} className="size-5" />

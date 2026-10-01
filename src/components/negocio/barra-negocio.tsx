@@ -1,7 +1,8 @@
 "use client";
 
-import { MessageCircle, Phone } from "lucide-react";
+import { ChevronLeft, MessageCircle, Phone } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -10,6 +11,7 @@ import { cn } from "@/lib/utils";
  * Barra superior con la identidad del negocio (no la de EmprendeHN).
  * En la página pública queda fija, se vuelve blanca al bajar y marca la sección
  * que se está leyendo; en las vistas previas (panel/admin) se queda sobre la portada.
+ * Abierta como app instalada no hay botón "atrás" del navegador (iPhone): lleva el suyo.
  */
 export function BarraNegocio({
   nombre,
@@ -27,6 +29,7 @@ export function BarraNegocio({
   const [solida, setSolida] = useState(false);
   const [alFinal, setAlFinal] = useState(false);
   const [enVista, setEnVista] = useState<string | null>(null);
+  const router = useRouter();
   const ids = secciones.map((s) => s.id).join(" ");
 
   useEffect(() => {
@@ -69,18 +72,30 @@ export function BarraNegocio({
   return (
     <header
       className={cn(
-        "@container inset-x-0 top-0 z-30 transition-colors duration-300",
+        "@container inset-x-0 top-0 z-30 pt-[env(safe-area-inset-top)] transition-colors duration-300",
         fija ? "fixed" : "absolute",
         solida ? "bg-white/95 text-ink shadow-sm backdrop-blur" : "text-white",
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
-        <a href="#inicio" className="flex min-w-0 items-center gap-2.5 text-current no-underline">
-          <span className="relative grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-white text-sm font-black text-brand-dark ring-1 ring-ink/10">
-            {logo ? <Image src={logo} alt="" fill sizes="36px" className="object-cover" /> : nombre.charAt(0)}
-          </span>
-          <span className="truncate font-bold">{nombre}</span>
-        </a>
+        <div className="flex min-w-0 items-center gap-1">
+          {fija && (
+            <button
+              type="button"
+              onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+              aria-label="Volver"
+              className="-ml-2.5 hidden size-10 shrink-0 place-items-center rounded-full text-current hover:bg-current/10 active:bg-current/15 standalone:grid"
+            >
+              <ChevronLeft className="size-6" aria-hidden />
+            </button>
+          )}
+          <a href="#inicio" className="flex min-w-0 items-center gap-2.5 text-current no-underline">
+            <span className="relative grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-white text-sm font-black text-brand-dark ring-1 ring-ink/10">
+              {logo ? <Image src={logo} alt="" fill sizes="36px" className="object-cover" /> : nombre.charAt(0)}
+            </span>
+            <span className="truncate font-bold">{nombre}</span>
+          </a>
+        </div>
 
         <nav aria-label="Secciones" className="hidden @3xl:block">
           <ul className="flex items-center gap-1 text-sm font-medium">

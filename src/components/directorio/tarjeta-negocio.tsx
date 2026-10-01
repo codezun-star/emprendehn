@@ -12,7 +12,7 @@ export function TarjetaNegocio({ negocio, prioridad = false }: { negocio: Result
   const destacado = negocio.plan !== "gratis";
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-brand-dark/10 transition hover:shadow-md hover:ring-brand/40">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-brand-dark/10 transition hover:shadow-md hover:ring-brand/40 active:scale-[0.985]">
       <div className="relative aspect-[16/10] bg-brand-dark/5">
         {imagen ? (
           <Image

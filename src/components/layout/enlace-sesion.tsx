@@ -15,8 +15,13 @@ function haySesion() {
 
 const suscribir = () => () => {};
 
+/** Hay sesión iniciada (en el servidor y al hidratar: no, para no romper el HTML estático). */
+export function useHaySesion() {
+  return useSyncExternalStore(suscribir, haySesion, () => false);
+}
+
 export function EnlaceSesion({ className }: { className?: string }) {
-  const conSesion = useSyncExternalStore(suscribir, haySesion, () => false);
+  const conSesion = useHaySesion();
 
   return (
     <Link

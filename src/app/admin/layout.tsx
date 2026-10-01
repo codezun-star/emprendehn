@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
+import { NavAdmin } from "@/components/admin/nav-admin";
 import { PanelHeader } from "@/components/layout/panel-header";
 import { cerrarSesionEnTodos } from "@/lib/acciones/dos-pasos";
 import { requerirAdmin } from "@/lib/auth";
@@ -24,29 +24,7 @@ export default async function LayoutAdmin({ children }: LayoutProps<"/admin">) {
       <PanelHeader email={sesion.email} esAdmin seccion="admin" />
       <div className="border-b border-brand-dark/10 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 px-4">
-          <nav aria-label="Administración" className="flex flex-wrap gap-x-6 text-sm font-semibold">
-            <Link href="/admin" className="py-3 text-brand-dark no-underline hover:text-brand">
-              Negocios
-            </Link>
-            <Link href="/admin/categorias" className="py-3 text-brand-dark no-underline hover:text-brand">
-              Categorías
-            </Link>
-            <Link href="/admin/reportes" className="flex items-center gap-1.5 py-3 text-brand-dark no-underline hover:text-brand">
-              Reportes
-              {reportesAbiertos > 0 && (
-                <span className="rounded-full bg-red-600 px-1.5 text-xs text-white">{reportesAbiertos}</span>
-              )}
-            </Link>
-            <Link href="/admin/resenas" className="flex items-center gap-1.5 py-3 text-brand-dark no-underline hover:text-brand">
-              Reseñas
-              {resenasReportadas > 0 && (
-                <span className="rounded-full bg-red-600 px-1.5 text-xs text-white">{resenasReportadas}</span>
-              )}
-            </Link>
-            <Link href="/admin/actividad" className="py-3 text-brand-dark no-underline hover:text-brand">
-              Actividad
-            </Link>
-          </nav>
+          <NavAdmin reportes={reportesAbiertos} resenas={resenasReportadas} />
           {/* Seguridad de la sesión: el código se vuelve a pedir a las 12 horas. */}
           <div className="flex flex-wrap items-center gap-x-3 py-2 text-xs text-ink/60">
             {sesion.dosPasosHasta && <span>Verificado con código hasta las {hora.format(sesion.dosPasosHasta)}</span>}

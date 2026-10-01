@@ -99,6 +99,8 @@ src/
     api/eventos/route.ts          # recibe visitas y clics (sendBeacon) -> registrar_evento
     sitemap.ts
     robots.ts
+    manifest.ts                   # app instalable (PWA): nombre, colores, accesos directos
+    iconos/[icono]/route.tsx      # íconos de la app (192, 512 y adaptable), generados en el build
     layout.tsx  globals.css  not-found.tsx
   components/
     ui/                           # botones, inputs, badges (Tailwind puro)
@@ -343,6 +345,26 @@ penaliza Google.
   `VolverArriba` aparece al subir o al llegar al final. Las barras fijas abajo llevan
   `data-barra-inferior` y fijan `--espacio-inferior` para lo flotante. Con *reducir
   movimiento* no hay scroll suave ni animaciones.
+- **Modo app en el celular** (< `md`): el sitio se usa como una app nativa.
+  - *Pestañas abajo* (`BarraPestanas`, `data-barra-pestanas`): en el directorio Inicio,
+    Categorías, Buscar, Ingresar/Mi panel y Menú (`PestanasSitio`); en el panel Mis
+    negocios, Mi cuenta, Admin y Directorio (`PestanasPanel`, no se muestra en el editor
+    de un negocio, que trae su barra de guardar). La pestaña tocada se marca al instante,
+    tocar la actual sube al inicio, y la barra se baja mientras se escribe. Una pantalla
+    con `data-barra-inferior` la reemplaza (globals.css). Arriba queda solo el logo y
+    "Publicar" (directorio) o "Salir" (panel); en la computadora, el encabezado de siempre.
+  - *Menú* (`MenuSitio`) en una hoja que sube desde abajo (`components/ui/hoja.tsx`:
+    `<dialog>` modal, se cierra tocando afuera, arrastrando hacia abajo, con Escape o al
+    elegir un enlace).
+  - *Instalable* (PWA): `app/manifest.ts` + `appleWebApp` en el layout. "Instalar la app"
+    del menú abre el diálogo del navegador (`beforeinstallprompt`, capturado en
+    `instrumentation-client.ts`, `lib/instalar-app.ts`) o explica los pasos en el iPhone.
+    Sin service worker: no hay caché offline que pueda servir páginas viejas del ISR.
+    Abierta como app (`standalone:` en Tailwind) la página del negocio muestra su botón
+    "Volver", porque no hay barra del navegador.
+  - `viewport-fit=cover`: las barras fijas usan `env(safe-area-inset-*)` (muesca, barra de
+    inicio del iPhone). Sin el recuadro gris al tocar: botones, tarjetas y pestañas
+    responden con `active:` (se achican un poco).
 
 ### 2.7 Variables de entorno
 

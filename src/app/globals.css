@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* standalone:… = abierta como app instalada (desde el ícono, sin la barra del navegador). */
+@custom-variant standalone (@media (display-mode: standalone));
+
 /*
  * Paleta EmprendeHN. Tailwind v4 genera las utilidades a partir de estos tokens:
  *   bg-brand-dark, text-brand, bg-brand-light, bg-accent, text-ink, border-brand/20…
@@ -52,8 +55,16 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    /* Sin el recuadro gris al tocar (como en una app): los botones, tarjetas y
+       pestañas responden con su propio estado :active. */
+    -webkit-tap-highlight-color: transparent;
     /* Al saltar a un #ancla o enfocar un campo, que no quede tapado por el encabezado fijo. */
     scroll-padding-top: 5rem;
+  }
+
+  /* viewport-fit=cover (layout.tsx): en horizontal, el contenido no queda bajo la muesca. */
+  body {
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
   }
 
   /* Página del negocio: la barra fija mide 4rem y las secciones traen su propio aire. */
@@ -78,6 +89,65 @@
   }
   body:has([data-barra-inferior="siempre"]) {
     --espacio-inferior: 5.5rem;
+  }
+
+  /* Pestañas de abajo en el celular (components/layout/barra-pestanas.tsx): el final
+     de la página y lo flotante se apartan. Una pantalla con su propia barra abajo
+     (data-barra-inferior) la reemplaza, y mientras se escribe se baja: el teclado
+     ocupa ese lugar, como en las apps. */
+  @media (width < 48rem) {
+    body:has([data-barra-pestanas]):not(:has([data-barra-inferior])) {
+      --espacio-inferior: calc(4rem + env(safe-area-inset-bottom));
+      padding-bottom: var(--espacio-inferior);
+    }
+    body:has([data-barra-inferior]) [data-barra-pestanas] {
+      display: none;
+    }
+    body:has(
+        :is(
+            input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="button"], [type="submit"]),
+            textarea,
+            select
+          ):focus
+      )
+      [data-barra-pestanas] {
+      translate: 0 100%;
+    }
+  }
+
+  /* Hoja que sube desde abajo (components/ui/hoja.tsx). Al cerrarse baja antes de
+     desaparecer (overlay/display con allow-discrete; donde no hay soporte, se va sin animar). */
+  dialog[data-hoja] {
+    translate: 0 100%;
+    transition:
+      translate 320ms cubic-bezier(0.32, 0.72, 0, 1),
+      overlay 320ms allow-discrete,
+      display 320ms allow-discrete;
+  }
+  dialog[data-hoja][open] {
+    translate: 0 0;
+  }
+  dialog[data-hoja]::backdrop {
+    background-color: transparent;
+    transition:
+      background-color 320ms ease,
+      overlay 320ms allow-discrete,
+      display 320ms allow-discrete;
+  }
+  dialog[data-hoja][open]::backdrop {
+    background-color: color-mix(in oklab, var(--color-ink) 45%, transparent);
+  }
+  @starting-style {
+    dialog[data-hoja][open] {
+      translate: 0 100%;
+    }
+    dialog[data-hoja][open]::backdrop {
+      background-color: transparent;
+    }
+  }
+  /* Con la hoja abierta, la página de atrás no se desplaza. */
+  body:has(dialog[data-hoja][open]) {
+    overflow: hidden;
   }
 
   @media (prefers-reduced-motion: reduce) {

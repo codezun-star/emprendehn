@@ -32,10 +32,16 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image" },
   formatDetection: { telephone: false },
+  // Instalada en el iPhone ("Agregar a inicio") se abre como app, sin la barra de Safari.
+  // El resto (Android, computadora) lo toma de manifest.ts.
+  appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
   themeColor: COLORES.brandDark,
+  // La página llega hasta los bordes de la pantalla (muesca, barra de inicio del
+  // iPhone); las barras fijas se apartan con env(safe-area-inset-*).
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

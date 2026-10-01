@@ -3,8 +3,9 @@ import type { ComponentProps } from "react";
 
 import { cn } from "@/lib/utils";
 
+// active:scale = respuesta al tocar en el celular (no hay hover).
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-lg font-semibold no-underline transition-colors disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center justify-center gap-2 rounded-lg font-semibold no-underline transition-[color,background-color,box-shadow,scale] active:not-disabled:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60";
 
 const variantes = {
   primario: "bg-brand-dark text-white hover:bg-brand",
